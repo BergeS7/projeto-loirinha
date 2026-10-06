@@ -1,3 +1,4 @@
+/** Cabeçalho padrão das telas internas. */
 import { ArrowLeft } from "lucide-react"
 import type { ReactNode } from "react"
 import { useNavigate } from "react-router"
@@ -9,6 +10,7 @@ type Props = {
   action?: ReactNode
 }
 
+/** Botão voltar, título, subtítulo e uma ação opcional à direita (ex.: favoritar). */
 export default function PageHeader({ title, subtitle, action }: Props) {
   const navigate = useNavigate()
   // Quem abriu um link direto não tem histórico no app: volta para o mapa.

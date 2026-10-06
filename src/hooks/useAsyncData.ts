@@ -1,7 +1,13 @@
+/** Hook genérico de carregamento assíncrono usado por todos os hooks de dados. */
 import { type DependencyList, useCallback, useEffect, useRef, useState } from "react"
 
+/**
+ * Função que busca os dados. Recebe um AbortSignal, que é cancelado quando a tela muda ou o
+ * componente sai da tela.
+ */
 export type Loader<T> = (signal: AbortSignal) => Promise<T>
 
+/** Estado devolvido por useAsyncData. */
 export type AsyncData<T> = {
   data: T | undefined
   error: unknown

@@ -1,22 +1,28 @@
+/**
+ * Hooks de dados de transporte. São a única porta de entrada das telas para os dados: cada hook
+ * chama o transitService e devolve { data, error, loading, reload } (veja useAsyncData).
+ */
 import { PONTOS_PROXIMOS_LIMITE, REFRESH_INTERVAL } from "../config/constants"
 import { transitService } from "../services/transit"
 import type { Coordenada } from "../types/transit"
 import useAsyncData from "./useAsyncData"
 
-/** Hooks de dados de transporte. São a única porta de entrada das telas para o backend. */
-
+/** Todas as linhas. */
 export function useLinhas() {
   return useAsyncData((signal) => transitService.getLinhas({ signal }), [])
 }
 
+/** Uma linha pelo id. `data` fica `null` quando a linha não existe. */
 export function useLinha(id: string) {
   return useAsyncData((signal) => transitService.getLinha(id, { signal }), [id])
 }
 
+/** Pontos da linha, na ordem do percurso. */
 export function useItinerario(linhaId: string) {
   return useAsyncData((signal) => transitService.getItinerario(linhaId, { signal }), [linhaId])
 }
 
+/** Traçado da linha pelas ruas (sequência de coordenadas). */
 export function useTracado(linhaId: string) {
   return useAsyncData((signal) => transitService.getTracado(linhaId, { signal }), [linhaId])
 }
@@ -35,10 +41,12 @@ export function useTracados(linhaIds: string[]) {
   )
 }
 
+/** Todos os pontos de ônibus. */
 export function usePontos() {
   return useAsyncData((signal) => transitService.getPontos({ signal }), [])
 }
 
+/** Um ponto pelo id. `data` fica `null` quando o ponto não existe. */
 export function usePonto(id: string) {
   return useAsyncData((signal) => transitService.getPonto(id, { signal }), [id])
 }
@@ -52,12 +60,14 @@ export function usePontosProximos(posicao: Coordenada | undefined, limite = PONT
   )
 }
 
+/** Próximos ônibus previstos para o ponto, atualizados automaticamente. */
 export function usePrevisoes(pontoId: string) {
   return useAsyncData((signal) => transitService.getPrevisoes(pontoId, { signal }), [pontoId], {
     refreshInterval: REFRESH_INTERVAL.previsoes,
   })
 }
 
+/** Avisos da operação (atrasos, desvios, informações). */
 export function useAvisos() {
   return useAsyncData((signal) => transitService.getAvisos({ signal }), [])
 }

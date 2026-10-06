@@ -1,3 +1,7 @@
+/**
+ * Mapa base do app (Leaflet + OpenStreetMap), usado na tela inicial, no detalhe da linha e no
+ * acompanhamento do ônibus.
+ */
 import { useEffect, useMemo } from "react"
 import { CircleMarker, MapContainer, Polyline, TileLayer, useMap } from "react-leaflet"
 import { CENTRO_SANTA_INES } from "../../config/constants"
@@ -36,6 +40,10 @@ type Props = {
   className?: string
 }
 
+/**
+ * Desenha o traçado da linha, os pontos fixos, os ônibus em movimento e a posição do usuário.
+ * Também controla a câmera: centraliza, segue o ônibus selecionado ou enquadra o traçado inteiro.
+ */
 export default function TransitMap({
   center = CENTRO_SANTA_INES,
   userPosition,

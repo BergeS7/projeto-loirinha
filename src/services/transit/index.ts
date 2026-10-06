@@ -1,3 +1,7 @@
+/**
+ * Ponto único de acesso aos dados de transporte: escolhe a implementação (simulada ou HTTP)
+ * conforme VITE_DATA_SOURCE.
+ */
 import { env } from "../../config/env"
 import { apiTransitService } from "./apiTransitService"
 import { mockTransitService } from "./mock/mockTransitService"

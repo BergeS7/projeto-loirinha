@@ -1,5 +1,7 @@
+/** Hook que acompanha a conexão com a internet. */
 import { useEffect, useState } from "react"
 
+/** `true` enquanto o aparelho tem internet. Atualiza sozinho ao conectar ou desconectar. */
 export default function useOnlineStatus() {
   const [online, setOnline] = useState(navigator.onLine)
 

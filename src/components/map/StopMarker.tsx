@@ -1,3 +1,4 @@
+/** Marcador de ponto de ônibus no mapa: alfinete fixo com balão de informações. */
 import { useMemo } from "react"
 import { Link } from "react-router"
 import { Marker, Popup } from "react-leaflet"

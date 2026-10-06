@@ -1,8 +1,10 @@
+/** Tela de endereço inexistente (qualquer rota não mapeada). */
 import { MapPinOff } from "lucide-react"
 import { Link } from "react-router"
 import { paths } from "../app/paths"
 import EmptyState from "../components/ui/EmptyState"
 
+/** Mensagem amigável com atalho de volta ao mapa. */
 export default function NotFoundPage() {
   return (
     <div className="page">

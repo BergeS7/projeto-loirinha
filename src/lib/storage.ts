@@ -8,6 +8,10 @@ export function readJson<T>(key: string, fallback: T): T {
   }
 }
 
+/**
+ * Salva um valor como JSON no localStorage. Se o armazenamento estiver cheio ou bloqueado, ignora
+ * sem quebrar o app.
+ */
 export function writeJson(key: string, value: unknown) {
   try {
     localStorage.setItem(key, JSON.stringify(value))

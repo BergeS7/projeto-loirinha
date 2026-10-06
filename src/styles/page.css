@@ -1,3 +1,4 @@
+/* Telas internas: cabeçalho, corpo, campo de busca, estados vazios e de carregamento, botões. */
 .page {
   min-height: calc(100dvh - 72px);
   background: #fff;

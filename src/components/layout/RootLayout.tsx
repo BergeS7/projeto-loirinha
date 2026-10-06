@@ -1,3 +1,8 @@
+/**
+ * Moldura comum a todas as telas: aviso de sem internet, área de conteúdo (<Outlet />) e navegação
+ * principal. No celular a navegação fica embaixo; em telas largas vira um menu lateral com a logo
+ * (veja styles/responsive.css).
+ */
 import { Bell, Heart, Map, Search } from "lucide-react"
 import { NavLink, Outlet } from "react-router"
 import { paths } from "../../app/paths"
@@ -11,6 +16,7 @@ const navItems = [
   { to: paths.avisos, label: "Avisos", icon: Bell },
 ]
 
+/** Layout raiz usado por todas as rotas. */
 export default function RootLayout() {
   const online = useOnlineStatus()
 

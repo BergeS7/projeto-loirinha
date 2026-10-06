@@ -1,6 +1,11 @@
+/**
+ * Hook de localização do usuário pelo GPS do aparelho. Exige HTTPS (ou localhost) e permissão do
+ * usuário.
+ */
 import { useEffect, useState } from "react"
 import type { Coordenada } from "../types/transit"
 
+/** Situação da localização: pedindo permissão, concedida (com a posição) ou indisponível. */
 export type GeolocationState =
   | { status: "pending"; position?: undefined }
   | { status: "granted"; position: Coordenada }

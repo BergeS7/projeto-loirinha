@@ -1,3 +1,7 @@
+/**
+ * Implementação simulada do TransitService: ônibus andando pelos traçados reais e previsões
+ * calculadas pela distância nas ruas. Não depende de internet nem de backend.
+ */
 import { normalizarTexto } from "../../../lib/format"
 import { distanciaKm } from "../../../lib/geo"
 import { buildRoutePath, pointAlong } from "../../../lib/route"
@@ -63,6 +67,10 @@ function onibusEmMovimento(linhaId?: string): Onibus[] {
     })
 }
 
+/**
+ * Fonte de dados simulada, usada quando VITE_DATA_SOURCE não é "api". Responde com uma pequena
+ * espera artificial, para imitar a rede.
+ */
 export const mockTransitService: TransitService = {
   async getLinhas({ signal } = {}) {
     await latencia(signal)

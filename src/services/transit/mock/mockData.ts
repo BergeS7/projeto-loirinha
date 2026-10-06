@@ -9,6 +9,7 @@ import geo from "./geo.generated.json"
 
 type GeoLinha = { pontoIds: string[]; pontoFracoes: number[]; comprimentoM: number; tracado: Coordenada[] }
 
+/** Pontos de ônibus com coordenadas reais, já encaixados sobre a via. */
 export const pontos: Ponto[] = geo.pontos
 
 /** Traçado de cada linha e a fração do percurso onde fica cada ponto. */
@@ -23,6 +24,7 @@ const metadadosLinhas: Omit<Linha, "pontoIds">[] = [
   { id: "l510", numero: "510", nome: "Circular Universitário", cor: "#7c3aed", operacao: "06:15 às 23:20", intervalo: "A cada 20 min" },
 ]
 
+/** Linhas simuladas: dados de exibição combinados com a ordem dos pontos do arquivo gerado. */
 export const linhas: Linha[] = metadadosLinhas.map((linha) => ({ ...linha, pontoIds: geoLinhas[linha.id].pontoIds }))
 
 /** Dados fixos de cada ônibus. A posição é calculada a partir de `progressoInicial`. */
@@ -45,6 +47,7 @@ export const onibusSimulados: OnibusSimulado[] = linhas.map((linha, linhaIndex) 
   lotacao: (["livre", "moderado", "cheio"] as const)[linhaIndex % 3],
 }))
 
+/** Avisos simulados, exibidos na tela de avisos. */
 export const avisos: Aviso[] = [
   {
     id: "a1",

@@ -1,3 +1,4 @@
+/** Tela do ponto (/ponto/:id): próximos ônibus previstos, atualizados automaticamente. */
 import { BusFront, Navigation, Users } from "lucide-react"
 import { Link, useParams } from "react-router"
 import { paths } from "../app/paths"
@@ -11,6 +12,7 @@ import { usePonto, usePrevisoes } from "../hooks/transit"
 import useFavorites from "../hooks/useFavorites"
 import { LOTACAO_LABEL } from "../lib/format"
 
+/** Mostra o ponto da URL e as chegadas previstas, do ônibus mais próximo ao mais distante. */
 export default function StopDetailPage() {
   const { id = "" } = useParams()
   const stop = usePonto(id)

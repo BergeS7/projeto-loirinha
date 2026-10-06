@@ -1,3 +1,4 @@
+/** Tela inicial (/): mapa com ônibus e pontos, busca e lista de pontos perto do usuário. */
 import { Bell, BusFront, ChevronRight, LocateFixed, MapPin, Search, Star } from "lucide-react"
 import { useState } from "react"
 import { Link } from "react-router"
@@ -13,6 +14,7 @@ import { saudacao } from "../lib/format"
 import { minutosCaminhando } from "../lib/geo"
 import type { Coordenada } from "../types/transit"
 
+/** Usa a localização do usuário quando permitida; se não, mostra o centro de Santa Inês. */
 export default function HomePage() {
   const geo = useGeolocation()
   const origem = geo.status === "pending" ? undefined : (geo.position ?? CENTRO_SANTA_INES)

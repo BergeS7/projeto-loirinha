@@ -1,3 +1,4 @@
+/* Telas largas (a partir de 840px: menu lateral e painéis) e preferência por menos movimento. */
 @media (min-width: 840px) {
   .app-content {
     min-height: 100dvh;

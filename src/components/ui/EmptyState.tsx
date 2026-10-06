@@ -1,3 +1,4 @@
+/** Componente de estado vazio, usado em listas sem itens e em situações sem conteúdo. */
 import type { ReactNode } from "react"
 
 type Props = {
@@ -11,6 +12,7 @@ type Props = {
   children?: ReactNode
 }
 
+/** Mensagem com ícone, título, descrição e uma ação opcional (passada como children). */
 export default function EmptyState({ icon, title, description, variant = "default", highlightIcon, titleAs: Title = "h3", children }: Props) {
   return (
     <div className={`empty-state ${variant === "default" ? "" : variant}`}>

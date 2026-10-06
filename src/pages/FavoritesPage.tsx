@@ -1,3 +1,4 @@
+/** Tela de favoritos (/favoritos): linhas e pontos salvos pelo usuário. */
 import { BusFront, Heart, MapPin, Star } from "lucide-react"
 import { Link } from "react-router"
 import { paths } from "../app/paths"
@@ -9,6 +10,7 @@ import RouteBadge from "../components/ui/RouteBadge"
 import { useLinhas, usePontos } from "../hooks/transit"
 import useFavorites from "../hooks/useFavorites"
 
+/** Lista os favoritos, com atalho para a linha ou o ponto e botão para remover. */
 export default function FavoritesPage() {
   const { favorites, toggle } = useFavorites()
   const hasFavorites = favorites.linhas.length > 0 || favorites.pontos.length > 0
@@ -19,6 +21,7 @@ export default function FavoritesPage() {
   const favoriteStops = (stops.data ?? []).filter((point) => favorites.pontos.includes(point.id))
   const error = lines.error ?? stops.error
 
+  // Escolhe o conteúdo conforme a situação: sem favoritos, carregando, erro ou lista.
   const content = () => {
     if (!hasFavorites) {
       return (

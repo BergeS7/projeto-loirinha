@@ -1,3 +1,7 @@
+/**
+ * Tela de acompanhamento (/acompanhar/:linhaId/:onibusId): segue um ônibus no mapa e mostra a
+ * previsão até o próximo ponto.
+ */
 import { BusFront, CheckCircle2, MapPin, Navigation, Users } from "lucide-react"
 import { useParams } from "react-router"
 import TransitMap from "../components/map/TransitMap"
@@ -7,6 +11,7 @@ import PageHeader from "../components/ui/PageHeader"
 import { useBusPositions, useItinerario, useLinha, useTracado } from "../hooks/transit"
 import { LOTACAO_LABEL } from "../lib/format"
 
+/** Mapa seguindo o ônibus, tempo até o próximo ponto, barra de progresso e lotação. */
 export default function TrackBusPage() {
   const { linhaId = "", onibusId = "" } = useParams()
   const line = useLinha(linhaId)
@@ -28,7 +33,9 @@ export default function TrackBusPage() {
   const linha = line.data
   const routePoints = itinerary.data ?? []
   const bus = buses.find((item) => item.id === onibusId)
+  // O próximo ponto vem do backend (proximoPontoId); aqui só buscamos os dados dele no itinerário.
   const nextStop = routePoints.find((point) => point.id === bus?.proximoPontoId)
+  // Barra limitada entre 12% e 90% para os ícones das pontas não ficarem por cima da linha.
   const progressPercent = Math.min(90, Math.max(12, (bus?.progresso ?? 0.2) * 100))
 
   return (

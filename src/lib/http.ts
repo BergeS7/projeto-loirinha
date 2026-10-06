@@ -1,5 +1,13 @@
+/**
+ * Cliente HTTP do app: toda chamada ao backend passa por aqui, com timeout, cancelamento, JSON e
+ * erros padronizados.
+ */
 import { env } from "../config/env"
 
+/**
+ * O servidor respondeu com erro (status 4xx ou 5xx). `body` traz o corpo da resposta, quando
+ * houver.
+ */
 export class HttpError extends Error {
   readonly status: number
   readonly body: unknown
@@ -12,6 +20,10 @@ export class HttpError extends Error {
   }
 }
 
+/**
+ * Não houve resposta do servidor: sem internet, servidor fora do ar, CORS bloqueado ou tempo
+ * esgotado.
+ */
 export class NetworkError extends Error {
   constructor(message = "Não foi possível conectar ao servidor.", options?: { cause?: unknown }) {
     super(message, options)
@@ -21,6 +33,7 @@ export class NetworkError extends Error {
 
 type QueryValue = string | number | boolean | null | undefined
 
+/** Opções de uma requisição. Os valores de `query` viram parâmetros da URL (vazios são ignorados). */
 export type RequestOptions = {
   method?: "GET" | "POST" | "PUT" | "PATCH" | "DELETE"
   query?: Record<string, QueryValue>
@@ -62,6 +75,11 @@ async function parseBody(response: Response) {
   return type.includes("application/json") ? response.json() : response.text()
 }
 
+/**
+ * Faz uma requisição à API (VITE_API_URL) e devolve o corpo da resposta. Lança HttpError para
+ * status de erro e NetworkError quando o servidor não responde. Um cancelamento pedido por `signal`
+ * é repassado como está.
+ */
 export async function request<T>(path: string, options: RequestOptions = {}): Promise<T> {
   const { method = "GET", query, body, headers, signal, timeoutMs = env.requestTimeoutMs } = options
   const timeout = withTimeout(signal, timeoutMs)
@@ -90,6 +108,7 @@ export async function request<T>(path: string, options: RequestOptions = {}): Pr
   }
 }
 
+/** Atalhos para os métodos HTTP mais usados. */
 export const http = {
   get: <T>(path: string, options?: Omit<RequestOptions, "method" | "body">) => request<T>(path, { ...options, method: "GET" }),
   post: <T>(path: string, body?: unknown, options?: Omit<RequestOptions, "method" | "body">) =>

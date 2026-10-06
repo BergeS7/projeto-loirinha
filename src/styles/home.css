@@ -1,3 +1,4 @@
+/* Tela inicial: barra sobre o mapa, botão de localizar e painel inferior. Também define peças reaproveitadas em outras telas (.icon-button, .round-icon, .section-heading). */
 .map-topbar {
   position: absolute;
   z-index: 800;

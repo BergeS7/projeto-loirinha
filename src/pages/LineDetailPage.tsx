@@ -1,3 +1,7 @@
+/**
+ * Tela da linha (/linha/:id): traçado no mapa, horário de operação, itinerário e ônibus em
+ * circulação.
+ */
 import { BusFront, ChevronRight, Clock3, MapPin } from "lucide-react"
 import { useState } from "react"
 import { Link, useParams } from "react-router"
@@ -13,6 +17,7 @@ import useFavorites from "../hooks/useFavorites"
 
 const PONTOS_VISIVEIS = 6
 
+/** Mostra a linha da URL. Trata carregamento, erro e linha inexistente. */
 export default function LineDetailPage() {
   const { id = "" } = useParams()
   const line = useLinha(id)

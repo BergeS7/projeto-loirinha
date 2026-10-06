@@ -1,3 +1,7 @@
+/**
+ * Desenhos (HTML/SVG) dos marcadores do mapa. Ficam fora dos componentes para serem criados uma vez
+ * e reaproveitados pelo Leaflet.
+ */
 import L from "leaflet"
 
 /** Ícones dos marcadores. São HTML (divIcon) para poderem ser estilizados em styles/map.css. */

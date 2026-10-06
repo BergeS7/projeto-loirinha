@@ -1,3 +1,4 @@
+/** Tela de busca (/buscar): procura linhas e pontos por texto e guarda as buscas recentes. */
 import { Clock3, MapPin, Search, X } from "lucide-react"
 import { type FormEvent, useState } from "react"
 import { Link } from "react-router"
@@ -11,6 +12,7 @@ import { useBusca } from "../hooks/transit"
 import useDebouncedValue from "../hooks/useDebouncedValue"
 import { getBuscasRecentes, salvarBuscaRecente } from "../services/preferences"
 
+/** Busca enquanto o usuário digita (com debounce). Sem texto, mostra as buscas recentes. */
 export default function SearchPage() {
   const [term, setTerm] = useState("")
   const [recents, setRecents] = useState(getBuscasRecentes)
@@ -18,6 +20,7 @@ export default function SearchPage() {
   const search = useBusca(debouncedTerm)
 
   const hasTerm = term.trim().length > 0
+  // Enquanto o usuário digita, o termo ainda não chegou à busca (debounce): mostra "Buscando..." e esconde resultados antigos.
   const typing = term.trim() !== debouncedTerm.trim()
   const loading = hasTerm && (typing || search.loading)
   const results = hasTerm && !typing ? search.data : undefined

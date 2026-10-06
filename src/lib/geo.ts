@@ -1,3 +1,7 @@
+/**
+ * Cálculos geográficos simples (distâncias curtas e direção), suficientes para a escala de uma
+ * cidade.
+ */
 import { VELOCIDADE_CAMINHADA_KMH } from "../config/constants"
 
 type LatLng = { lat: number; lng: number }
@@ -9,6 +13,7 @@ export function distanciaKm(a: LatLng, b: LatLng) {
   return Math.sqrt(lat * lat + lng * lng)
 }
 
+/** Tempo estimado de caminhada, em minutos (mínimo 1), para percorrer `km` quilômetros. */
 export function minutosCaminhando(km: number) {
   return Math.max(1, Math.round((km / VELOCIDADE_CAMINHADA_KMH) * 60))
 }

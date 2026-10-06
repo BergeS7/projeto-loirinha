@@ -1,3 +1,7 @@
+/**
+ * Marcador de ônibus no mapa: veículo visto de cima que anda pelo traçado da linha e gira conforme
+ * a direção da rua.
+ */
 import type L from "leaflet"
 import { useEffect, useMemo, useRef, useState } from "react"
 import { Link } from "react-router"

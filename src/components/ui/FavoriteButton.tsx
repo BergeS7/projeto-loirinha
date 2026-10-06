@@ -1,3 +1,4 @@
+/** Botão de estrela para favoritar linhas e pontos. */
 import { Star } from "lucide-react"
 
 type Props = {
@@ -6,6 +7,7 @@ type Props = {
   label?: string
 }
 
+/** Estrela preenchida quando `active`. O texto para leitores de tela muda conforme o estado. */
 export default function FavoriteButton({ active, onClick, label = "Favoritar" }: Props) {
   return (
     <button

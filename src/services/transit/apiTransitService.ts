@@ -1,3 +1,4 @@
+/** Implementação do TransitService que conversa com o backend real por HTTP. */
 import { HttpError, http } from "../../lib/http"
 import type { Aviso, Coordenada, Linha, Onibus, Ponto, PontoProximo, Previsao, ResultadoBusca } from "../../types/transit"
 import type { TransitService } from "./TransitService"

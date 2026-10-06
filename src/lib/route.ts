@@ -1,3 +1,7 @@
+/**
+ * Geometria dos traçados das linhas: comprimento, posição pela distância percorrida e direção da
+ * rua. É o que mantém os ônibus sobre as vias no mapa.
+ */
 import type { Coordenada } from "../types/transit"
 import { rumoGraus } from "./geo"
 
@@ -13,11 +17,13 @@ export type RoutePath = {
 const RAIO_TERRA_M = 6_371_000
 const rad = (graus: number) => (graus * Math.PI) / 180
 
+/** Distância em metros entre duas coordenadas (fórmula de Haversine). */
 export function metrosEntre([lat1, lng1]: Coordenada, [lat2, lng2]: Coordenada) {
   const h = Math.sin(rad(lat2 - lat1) / 2) ** 2 + Math.cos(rad(lat1)) * Math.cos(rad(lat2)) * Math.sin(rad(lng2 - lng1) / 2) ** 2
   return 2 * RAIO_TERRA_M * Math.asin(Math.sqrt(h))
 }
 
+/** Prepara um traçado calculando a distância acumulada até cada vértice. */
 export function buildRoutePath(coords: Coordenada[]): RoutePath {
   const cumulative = [0]
   for (let i = 1; i < coords.length; i++) cumulative.push(cumulative[i - 1] + metrosEntre(coords[i - 1], coords[i]))
@@ -27,6 +33,7 @@ export function buildRoutePath(coords: Coordenada[]): RoutePath {
 // Traçados não mudam depois de carregados: cada array é preparado uma vez só.
 const cache = new WeakMap<Coordenada[], RoutePath>()
 
+/** Igual a buildRoutePath, mas com cache: cada array de coordenadas é preparado uma vez só. */
 export function getRoutePath(coords: Coordenada[]): RoutePath {
   let path = cache.get(coords)
   if (!path) {

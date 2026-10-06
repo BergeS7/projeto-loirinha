@@ -1,5 +1,7 @@
+/** Contrato (interface) da camada de dados de transporte. */
 import type { Aviso, Coordenada, Linha, Onibus, Ponto, PontoProximo, Previsao, ResultadoBusca } from "../../types/transit"
 
+/** Opções comuns a todas as chamadas. `signal` permite cancelar a requisição. */
 export type CallOptions = { signal?: AbortSignal }
 
 /**

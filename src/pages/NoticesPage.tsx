@@ -1,3 +1,4 @@
+/** Tela de avisos (/avisos): atrasos, desvios e informações da operação. */
 import { AlertTriangle, Bell, Info, Route } from "lucide-react"
 import EmptyState from "../components/ui/EmptyState"
 import ErrorState from "../components/ui/ErrorState"
@@ -8,6 +9,7 @@ import type { TipoAviso } from "../types/transit"
 
 const noticeIcons: Record<TipoAviso, typeof Info> = { atraso: AlertTriangle, desvio: Route, informacao: Info }
 
+/** Lista os avisos, cada um com ícone e cor conforme o tipo. */
 export default function NoticesPage() {
   const notices = useAvisos()
 

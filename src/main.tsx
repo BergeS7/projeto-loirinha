@@ -1,3 +1,7 @@
+/**
+ * Ponto de entrada do app: carrega os estilos globais (incluindo o CSS do Leaflet, usado pelos
+ * mapas) e monta o <App /> na div #root do index.html.
+ */
 import React from "react"
 import ReactDOM from "react-dom/client"
 import App from "./app/App"

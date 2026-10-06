@@ -1,3 +1,8 @@
+/**
+ * Configuração do Vite: plugins (React, Tailwind, PWA e os do Figma Make), proxy da API em
+ * desenvolvimento e servidor local. A parte de PWA define o manifesto (nome, cores, ícones) e o
+ * cache offline do service worker.
+ */
 import { defineConfig, loadEnv, type HtmlTagDescriptor, type Plugin } from 'vite'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
