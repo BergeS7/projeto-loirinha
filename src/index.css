@@ -1,0 +1,14 @@
+@import "tailwindcss";
+
+/* Estilos globais divididos por área. A ordem importa: mantém a cascata original. */
+@import "./styles/base.css";
+@import "./styles/layout.css";
+@import "./styles/map.css";
+@import "./styles/home.css";
+@import "./styles/page.css";
+@import "./styles/stop.css";
+@import "./styles/line.css";
+@import "./styles/track.css";
+@import "./styles/lists.css";
+@import "./styles/utilities.css";
+@import "./styles/responsive.css";

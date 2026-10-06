@@ -1,0 +1,15 @@
+{
+  "title": "Projeto Loirinha",
+  "description": "Track public transport in real-time with an intuitive map interface, helping users easily find bus locations and arrival times for a seamless travel experience.",
+  "language": "pt-BR",
+  "icons": {
+    "icon": "/icons/logo.svg"
+  },
+  "robots": {
+    "index": false
+  },
+  "accessibility": {
+    "addBypassLinks": false,
+    "ignoreReducedMotion": false
+  }
+}

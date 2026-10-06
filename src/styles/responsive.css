@@ -1,0 +1,139 @@
+@media (min-width: 840px) {
+  .app-content {
+    min-height: 100dvh;
+    margin-left: 220px;
+    padding-bottom: 0;
+  }
+
+  .main-nav {
+    top: 0;
+    right: auto;
+    width: 220px;
+    height: 100dvh;
+    display: flex;
+    align-items: stretch;
+    flex-direction: column;
+    gap: 6px;
+    padding: 24px 14px;
+    border-top: 0;
+    border-right: 1px solid #e5e6e8;
+    box-shadow: 5px 0 24px rgb(24 26 31 / 4%);
+  }
+
+  .brand-lockup {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 0 8px 28px;
+  }
+
+  .brand-lockup > span:last-child {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .brand-lockup strong {
+    font-size: 17px;
+  }
+
+  .brand-lockup small {
+    color: var(--muted);
+    font-size: 10px;
+  }
+
+  .main-nav > a {
+    min-height: 48px;
+    justify-content: flex-start;
+    flex-direction: row;
+    gap: 12px;
+    padding: 0 13px;
+    font-size: 13px;
+  }
+
+  .main-nav > a.active {
+    background: #fff2bd;
+  }
+
+  .home-page,
+  .track-page {
+    inset: 0 0 0 220px;
+  }
+
+  .bottom-sheet {
+    top: 0;
+    right: auto;
+    bottom: 0;
+    left: 0;
+    width: 390px;
+    max-height: none;
+    border-radius: 0 24px 24px 0;
+  }
+
+  .bottom-sheet.open {
+    max-height: none;
+  }
+
+  .sheet-content,
+  .bottom-sheet.open .sheet-content {
+    max-height: calc(100dvh - 24px);
+    padding: 22px 24px 32px;
+  }
+
+  .bottom-sheet .sheet-handle {
+    display: none;
+  }
+
+  .map-topbar {
+    left: 414px;
+  }
+
+  .locate-button {
+    right: 22px;
+    bottom: 24px;
+  }
+
+  .page {
+    min-height: 100dvh;
+  }
+
+  .page-header {
+    padding-right: 28px;
+    padding-left: 28px;
+  }
+
+  .line-map-wrap {
+    height: 380px;
+  }
+
+  .track-page .transit-map {
+    width: calc(100% - 390px);
+    margin-left: 390px;
+  }
+
+  .tracking-sheet {
+    top: 0;
+    right: auto;
+    bottom: 0;
+    width: 390px;
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    border-radius: 0;
+  }
+
+  .track-header-overlay {
+    right: 24px;
+    left: 414px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

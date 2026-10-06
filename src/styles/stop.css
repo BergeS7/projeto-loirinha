@@ -1,0 +1,82 @@
+.arrival-list {
+  display: grid;
+  gap: 12px;
+}
+
+.arrival-card {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  padding: 14px;
+}
+
+.arrival-route {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.arrival-route > div {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.arrival-route strong {
+  overflow: hidden;
+  font-size: 14px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.arrival-route small {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 4px;
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.arrival-time {
+  min-width: 58px;
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  color: #116e4d;
+}
+
+.arrival-time strong {
+  font-size: 27px;
+  letter-spacing: -0.05em;
+}
+
+.arrival-time span {
+  margin-left: 3px;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.track-link {
+  grid-column: 1 / -1;
+  min-height: 42px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  margin-top: 13px;
+  border-top: 1px solid var(--line);
+  padding-top: 12px;
+  color: #755900;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.data-note {
+  margin: 18px auto;
+  color: #8a8e97;
+  font-size: 11px;
+  line-height: 1.5;
+  text-align: center;
+}
+

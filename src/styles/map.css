@@ -1,0 +1,138 @@
+.home-page,
+.track-page {
+  position: fixed;
+  inset: 0 0 72px;
+  overflow: hidden;
+  background: #e7e4dc;
+}
+
+.transit-map {
+  width: 100%;
+  height: 100%;
+  background: #e9e5db;
+}
+
+.leaflet-control-attribution {
+  opacity: 0.6;
+  font-size: 8px !important;
+}
+
+.leaflet-popup-content-wrapper {
+  border-radius: 12px;
+}
+
+.bus-marker-wrap,
+.stop-marker-wrap {
+  background: transparent !important;
+  border: 0 !important;
+}
+
+.map-popup {
+  display: grid;
+  gap: 3px;
+  min-width: 150px;
+}
+
+.map-popup strong {
+  font-size: 14px;
+}
+
+.map-popup small {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.map-popup a {
+  margin-top: 6px;
+  color: #8a6500;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+/* Ônibus: veículo visto de cima, girado na direção em que anda */
+
+.bus-marker {
+  position: relative;
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+}
+
+.bus-vehicle {
+  position: relative;
+  z-index: 1;
+  transition: transform 0.5s ease;
+  filter: drop-shadow(0 2px 2px rgb(0 0 0 / 35%));
+}
+
+/* Ônibus acompanhado: halo suave por baixo, sem mudar o desenho. */
+.bus-marker.selected::before {
+  position: absolute;
+  inset: 0;
+  content: "";
+  border: 2px solid rgb(24 26 31 / 55%);
+  border-radius: 50%;
+  background: rgb(245 184 0 / 28%);
+}
+
+.bus-marker.selected .bus-vehicle {
+  transform-origin: center;
+  scale: 1.15;
+}
+
+/* Ponto de ônibus: marcador fixo; a ponta do alfinete é a localização exata. */
+
+.stop-marker {
+  position: relative;
+  width: 30px;
+  height: 40px;
+}
+
+.stop-pin {
+  position: absolute;
+  top: 7px;
+  left: 2px;
+  width: 26px;
+  height: 26px;
+  display: grid;
+  place-items: center;
+  border: 2.5px solid #fff;
+  border-radius: 50% 50% 50% 0;
+  background: var(--graphite);
+  transform: rotate(-45deg);
+  transform-origin: center;
+  box-shadow: -1px 2px 6px rgb(0 0 0 / 28%);
+}
+
+.stop-glyph {
+  width: 17px;
+  height: 17px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: #fff;
+  color: var(--graphite);
+  transform: rotate(45deg);
+}
+
+/* Sombra no chão, embaixo da ponta. */
+.stop-ground {
+  position: absolute;
+  bottom: 0;
+  z-index: -1;
+  left: 50%;
+  width: 12px;
+  height: 4px;
+  transform: translateX(-50%);
+  border-radius: 50%;
+  background: rgb(0 0 0 / 28%);
+}
+
+.stop-marker.highlighted .stop-pin {
+  background: var(--yellow);
+}
+
+.stop-marker.highlighted .stop-glyph {
+  color: var(--graphite);
+}

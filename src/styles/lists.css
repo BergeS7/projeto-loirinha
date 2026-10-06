@@ -1,0 +1,105 @@
+.favorite-row {
+  min-height: 66px;
+  display: flex;
+  align-items: center;
+  border-bottom: 1px solid var(--line);
+}
+
+.favorite-row:last-child {
+  border-bottom: 0;
+}
+
+.favorite-row > a {
+  min-width: 0;
+  display: flex;
+  flex: 1;
+  align-items: center;
+  gap: 11px;
+  padding: 10px 0 10px 12px;
+}
+
+.favorite-row > button {
+  width: 48px;
+  height: 48px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  background: transparent;
+  color: #d29a00;
+  cursor: pointer;
+}
+
+.notice-list {
+  display: grid;
+  gap: 12px;
+}
+
+.notice-card {
+  display: grid;
+  grid-template-columns: 42px minmax(0, 1fr);
+  gap: 12px;
+  padding: 15px;
+  border: 1px solid #e7e8ea;
+  border-radius: 17px;
+  background: white;
+  box-shadow: 0 4px 14px rgb(29 32 36 / 4%);
+}
+
+.notice-icon {
+  width: 42px;
+  height: 42px;
+  display: grid;
+  place-items: center;
+  border-radius: 13px;
+  background: #eef0f3;
+}
+
+.notice-card.atraso .notice-icon {
+  background: #fff0dd;
+  color: #a95700;
+}
+
+.notice-card.desvio .notice-icon {
+  background: #ffe8e6;
+  color: #bd3c33;
+}
+
+.notice-card.informacao .notice-icon {
+  background: #e4f1ff;
+  color: #2768a8;
+}
+
+.notice-time {
+  color: var(--muted);
+  font-size: 10px;
+}
+
+.notice-card h2 {
+  margin: 4px 0 7px;
+  font-size: 15px;
+  line-height: 1.25;
+}
+
+.notice-card p {
+  margin: 0;
+  color: #626771;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.notice-lines {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 10px;
+  color: var(--muted);
+  font-size: 10px;
+}
+
+.notice-lines b {
+  padding: 3px 6px;
+  border-radius: 5px;
+  background: #eeeeef;
+  color: #383b41;
+}
+
