@@ -2,6 +2,15 @@
 
 PWA mobile-first para acompanhar ônibus urbanos em Santa Inês (MA). Feito com React 19, TypeScript, Vite, Tailwind CSS, React Router e Leaflet/OpenStreetMap.
 
+## Repositório
+
+| Pasta | O que é |
+| --- | --- |
+| raiz (`src/`, `public/`…) | Front-end PWA (este README) |
+| [`backend/`](backend/README.md) | Backend Firebase: Cloud Functions em Python, regras, scripts e dados do emulador |
+| [`docs/backend/`](docs/backend/BACKEND.md) | Documentação atual do backend (PDF de 21/10/2026 + resumo) |
+| [`docs/INTEGRACAO.md`](docs/INTEGRACAO.md) | Plano para ligar o front ao backend: o que já existe, o que falta e as decisões pendentes |
+
 ## Como rodar
 
 O projeto usa o **pnpm 10.34.3** (definido em `.mise.toml`).
@@ -55,10 +64,11 @@ src/
   hooks/        transit.ts (hooks de dados), useAsyncData e hooks do navegador
   services/
     transit/    Contrato TransitService + implementação HTTP e simulada (mock/)
+    backend/    Ponte com o backend Firebase: login, callables, telemetria e erros (ainda sem uso nas telas)
     preferences.ts  Favoritos e buscas recentes (localStorage)
   lib/          Utilitários sem React: http, geo, format, storage
-  config/       Variáveis de ambiente (env.ts) e constantes
-  types/        Tipos do domínio
+  config/       Variáveis de ambiente (env.ts), constantes e conexão Firebase (firebase.ts)
+  types/        Tipos do domínio (transit.ts) e do backend Firebase (backend.ts)
   styles/       CSS global dividido por área (importado em index.css)
 ```
 

@@ -1,0 +1,19 @@
+{
+  "name": "projeto-loirinha",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Rastreamento em tempo real das Loirinhas - infraestrutura Firebase",
+  "engines": { "node": ">=20.12" },
+  "scripts": {
+    "emulators": "firebase emulators:start --only auth --project demo-loirinha",
+    "claims:set": "node scripts/firebase/set-custom-claim.js",
+    "claims:get": "node scripts/firebase/get-custom-claim.js",
+    "test": "node --test test/custom-claims.test.js"
+  },
+  "dependencies": {
+    "firebase-admin": "^13.0.0"
+  },
+  "devDependencies": {
+    "firebase-tools": "^14.0.0"
+  }
+}

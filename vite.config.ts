@@ -106,6 +106,8 @@ react(),
       watch: {
         ignored: [
           '**/.figma/**',
+          // Backend Firebase: os emuladores regravam emulator-data/ e não fazem parte do front.
+          '**/backend/**',
 ],
       },
     },

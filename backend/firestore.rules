@@ -1,0 +1,65 @@
+rules_version = '2';
+
+// Princípio: o cliente NUNCA escreve nas coleções sensíveis. Papéis, vínculos
+// de frota e ocupação de ônibus (active_driver_id) só mudam via backend
+// (Admin SDK / Cloud Function `checkIn`), que ignora estas regras e por isso
+// valida tudo por conta própria.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    // A ROLE OFICIAL é a custom claim `role` do token (definida só pelo Admin
+    // SDK). NÃO use `users/{uid}.role` para autorizar: é campo informativo e
+    // legado (e nenhum cliente consegue escrevê-lo, mas o Admin SDK pode).
+    function hasRole(role) {
+      return signedIn() && request.auth.token.get('role', null) == role;
+    }
+
+    // Perfil: cada usuário lê somente o próprio. Sem escrita pelo cliente
+    // (evita troca de `fleet_owner_id` e edição do espelho informativo `role`).
+    match /users/{uid} {
+      allow read: if signedIn() && request.auth.uid == uid;
+      allow write: if false;
+    }
+
+    // Cadastro de motoristas: o próprio motorista (vínculo por user_id) ou o
+    // dono da frota (role `dono_frota` na claim E fleet_owner_id == uid) leem.
+    match /drivers/{driverId} {
+      allow read: if signedIn() && (
+        resource.data.user_id == request.auth.uid ||
+        (hasRole('dono_frota') &&
+         resource.data.fleet_owner_id == request.auth.uid)
+      );
+      allow write: if false;
+    }
+
+    // Ônibus: leitura por qualquer usuário autenticado (passageiros precisam
+    // ver ônibus). Escrita bloqueada, inclusive `active_driver_id`.
+    match /buses/{busId} {
+      allow read: if signedIn();
+      allow write: if false;
+    }
+
+    // Rotas. Sem `fleet_owner_id` = rota legada/pública (ex.: seed_routes.py):
+    // leitura por qualquer autenticado. COM `fleet_owner_id` = rota privada da
+    // frota: leitura direta só pelo dono (claim `dono_frota` E fleet_owner_id
+    // == uid). Motoristas leem a própria rota pela callable `getMyRoute`.
+    // Escrita só via backend (createRoute / setDriverRoute).
+    match /routes/{routeId} {
+      allow read: if signedIn() && (
+        !('fleet_owner_id' in resource.data) ||
+        (hasRole('dono_frota') &&
+         resource.data.fleet_owner_id == request.auth.uid)
+      );
+      allow write: if false;
+    }
+
+    // Tudo o mais: negado.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

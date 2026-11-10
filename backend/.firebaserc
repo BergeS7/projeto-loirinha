@@ -1,0 +1,15 @@
+{
+  "projects": {
+    "default": "loirinha-1a25f"
+  },
+  "targets": {
+    "loirinha-1a25f": {
+      "database": {
+        "local-telemetry": [
+          "loirinha-1a25f-default-rtdb"
+        ]
+      }
+    }
+  },
+  "etags": {}
+}

@@ -1,0 +1,3 @@
+# Somente para testes locais (não é enviado no deploy como dependência de runtime)
+pytest>=8.0
+requests>=2.31

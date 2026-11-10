@@ -1,0 +1,12 @@
+{
+  "rules": {
+    ".read": false,
+    ".write": false,
+
+    "telemetry": {
+      ".indexOn": ["updated_at"],
+      ".read": "auth != null",
+      ".write": false
+    }
+  }
+}

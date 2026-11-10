@@ -1,0 +1,6 @@
+fastapi
+uvicorn
+firebase-admin
+pydantic
+
+# Cria esse arquivo na mesma pasta e roda um pip install -r requirements.txt:

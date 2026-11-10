@@ -1,0 +1,13 @@
+node_modules/
+.env
+.env.*
+!.env.example
+# Credenciais: nunca versionar
+*service-account*.json
+*serviceAccount*.json
+*-firebase-adminsdk-*.json
+secrets/
+firebase-debug.log
+*-debug.log
+emulator-data/
+.DS_Store

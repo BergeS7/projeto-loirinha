@@ -12,6 +12,7 @@
     "icons": "node scripts/generate-icons.mjs"
   },
   "dependencies": {
+    "firebase": "^12.19.0",
     "leaflet": "^1.9.4",
     "lucide-react": "^1.52.0",
     "react": "^19.0.0",
