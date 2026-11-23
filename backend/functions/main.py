@@ -12,6 +12,8 @@ from firebase_functions.options import set_global_options
 import checkin
 import fleet_routes
 import telemetry
+import accounts
+
 
 # For cost control, you can set the maximum number of containers that can be
 # running at the same time. This helps mitigate the impact of unexpected
@@ -26,6 +28,53 @@ REGION = "southamerica-east1"
 set_global_options(region=REGION, max_instances=10)
 
 initialize_app()
+
+
+def _account_call(handler, req):
+    """Traduz erros de negócio sem confiar em identidade enviada pelo navegador."""
+    try:
+        return handler(
+            firestore.client(),
+            req.auth.uid if req.auth else None,
+            req.data,
+            req.auth.token if req.auth else None,
+        )
+    except fleet_routes.RouteError as error:
+        raise https_fn.HttpsError(
+            https_fn.FunctionsErrorCode(error.code),
+            error.message,
+            details={"reason": error.reason},
+        ) from error
+
+
+@https_fn.on_call()
+def registerPassenger(req: https_fn.CallableRequest):
+    """Cadastro público exclusivamente de passageiro autenticado por e-mail."""
+    return _account_call(accounts.register_passenger, req)
+
+
+@https_fn.on_call()
+def listFleetUsers(req: https_fn.CallableRequest):
+    """Diretório restrito à própria frota."""
+    return _account_call(accounts.list_users, req)
+
+
+@https_fn.on_call()
+def createDriver(req: https_fn.CallableRequest):
+    """Provisionamento de motorista autorizado pelo dono."""
+    return _account_call(accounts.create_driver, req)
+
+
+@https_fn.on_call()
+def setDriverActive(req: https_fn.CallableRequest):
+    """Ativa ou desativa motorista da própria frota."""
+    return _account_call(accounts.set_active, req)
+
+
+@https_fn.on_call()
+def listFleetRoutes(req: https_fn.CallableRequest):
+    """Opções de rotas para a equipe da própria frota."""
+    return _account_call(accounts.list_routes, req)
 
 
 @https_fn.on_call()
@@ -121,15 +170,18 @@ def _telemetry_root():
     """
     app = firebase_admin.get_app()
     project = app.project_id or os.environ.get("GCLOUD_PROJECT", "")
-    url = (app.options.get("databaseURL")
-           or f"https://{project}-default-rtdb.firebaseio.com")
+    url = (
+        app.options.get("databaseURL")
+        or f"https://{project}-default-rtdb.firebaseio.com"
+    )
     return rtdb.reference("/telemetry", app=app, url=url)
 
 
 def _as_https_error(err: "telemetry.TelemetryError") -> https_fn.HttpsError:
     return https_fn.HttpsError(
-        https_fn.FunctionsErrorCode(err.code), str(err),
-        details={"reason": err.reason})
+        https_fn.FunctionsErrorCode(err.code), str(err), details={"reason": err.reason}
+    )
+
 
 @https_fn.on_call()
 def sendTelemetry(req: https_fn.CallableRequest) -> dict:
@@ -143,7 +195,8 @@ def sendTelemetry(req: https_fn.CallableRequest) -> dict:
     claims = req.auth.token if req.auth is not None else None
     try:
         return telemetry.handle_send_telemetry(
-            firestore.client(), _telemetry_root(), uid, req.data, claims)
+            firestore.client(), _telemetry_root(), uid, req.data, claims
+        )
     except telemetry.TelemetryError as err:
         raise _as_https_error(err)
 
@@ -155,7 +208,8 @@ def endTelemetry(req: https_fn.CallableRequest) -> dict:
     claims = req.auth.token if req.auth is not None else None
     try:
         return telemetry.handle_end_telemetry(
-            firestore.client(), _telemetry_root(), uid, req.data, claims)
+            firestore.client(), _telemetry_root(), uid, req.data, claims
+        )
     except telemetry.TelemetryError as err:
         raise _as_https_error(err)
 
@@ -174,4 +228,6 @@ if os.environ.get("FUNCTIONS_EMULATOR") != "true":
         telemetry.run_sweeps(
             _telemetry_root(),
             telemetry.firestore_in_service_checker(firestore.client()),
-            iterations=4, interval_s=15)
+            iterations=4,
+            interval_s=15,
+        )

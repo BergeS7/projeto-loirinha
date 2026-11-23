@@ -59,9 +59,28 @@ def test_anonimo_nao_le_onibus(db, emulator_host):
     assert Client(emulator_host, None).get("buses/bus1").status_code == 403
 
 
-def test_autenticado_le_onibus(db, emulator_host):
+def test_passageiro_nao_le_vinculos_privados_do_onibus(db, emulator_host):
     seed(db)
-    assert Client(emulator_host, "p1").get("buses/bus1").status_code == 200
+    assert Client(emulator_host, "p1").get("buses/bus1").status_code == 403
+
+
+def test_dono_e_motorista_ativo_leem_onibus(db, emulator_host):
+    """A projeção pública não muda o acesso operacional legítimo."""
+    seed(db)
+    db.collection("buses").document("bus1").update({"active_driver_id": "m1"})
+    assert Client(emulator_host, "m1", "motorista").get("buses/bus1").status_code == 200
+    assert Client(emulator_host, FLEET_A, "dono_frota").get("buses/bus1").status_code == 200
+    assert Client(emulator_host, "m2", "motorista").get("buses/bus1").status_code == 403
+
+
+def test_catalogo_publico_leitura_autenticada_sem_escrita(db, emulator_host):
+    """Anônimo autenticado não precisa claim para consultar o catálogo sanitizado."""
+    for name in ("public_lines", "public_stops", "public_buses", "public_notices"):
+        path = f"{name}/sample"
+        db.collection(name).document("sample").set({"nome": "Público"})
+        assert Client(emulator_host, "anonimo_autenticado").get(path).status_code == 200
+        assert Client(emulator_host, None).get(path).status_code == 403
+        assert Client(emulator_host, "p1").patch(path, {"nome": "alterado"}).status_code == 403
 
 
 def test_motorista_nao_assume_onibus_direto(db, emulator_host):

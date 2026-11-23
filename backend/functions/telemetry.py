@@ -272,6 +272,8 @@ def _next_node(prev: Any, fix: dict, server_now: int) -> dict:
     if isinstance(prev, dict) and _valid_coords(prev.get("lat"), prev.get("lng")):
         node["lat_anterior"] = prev["lat"]
         node["long_anterior"] = prev["lng"]
+    # Projeção calculada por código confiável; o payload público continua estrito.
+    node.update(fix.get("public_projection", {}))
     return node
 
 
@@ -361,6 +363,8 @@ def handle_send_telemetry(db, root, uid, data, claims,
     fix = parse_payload(data)
     server_now = now_ms() if server_now is None else server_now
     authorize_driver(db, uid, fix["bus_id"])
+    from passenger import public_projection
+    fix["public_projection"] = public_projection(db, fix)
     node = apply_update(root, fix, server_now)
     return {"success": True, "busId": fix["bus_id"],
             "updated_at": node["updated_at"], "is_online": True,
@@ -373,9 +377,17 @@ def handle_end_telemetry(db, root, uid, data, claims) -> dict:
     bus_id = parse_bus_id(data.get("busId") if isinstance(data, dict) else None)
     authorize_driver(db, uid, bus_id)
     ref = root.child(bus_id)
-    existed = ref.get() is not None
-    ref.delete()
-    return {"success": True, "busId": bus_id, "removed": existed}
+    # Uma nova leitura exige nova autorização: uma troca de motorista invalida a ação.
+    for _ in range(MAX_CAS_RETRIES):
+        authorize_driver(db, uid, bus_id)
+        current, etag = ref.get(etag=True)
+        if current is None:
+            return {"success": True, "busId": bus_id, "removed": False}
+        # RTDB não persiste objetos vazios; o SDK recusa None neste método.
+        ok, _, _ = ref.set_if_unchanged(etag, {})
+        if ok:
+            return {"success": True, "busId": bus_id, "removed": True}
+    raise TelemetryError("aborted", "contention", "Telemetria mudou durante o encerramento.")
 
 
 # ============================================================ monitor =======
@@ -411,8 +423,10 @@ def expire_node(root, bus_id: str, server_now: int,
             return "fresh"
         if in_service is not None and not in_service(bus_id):
             # Viagem encerrada (sem motorista ativo): não é perda de conexão.
-            ref.delete()
-            return "removed"
+            ok, _, _ = ref.set_if_unchanged(etag, {})
+            if ok:
+                return "removed"
+            continue
         if (cur.get("is_online") is False
                 and cur.get("connection_status") == CONNECTION_LOST):
             return "unchanged"

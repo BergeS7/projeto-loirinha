@@ -1,12 +1,13 @@
 {
   "name": "figma-make-app",
-  "private": true,
   "version": "1.0.0",
+  "private": true,
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
     "typecheck": "tsc --noEmit",
+    "test": "vitest run",
     "preview": "vite preview",
     "format": "oxfmt",
     "icons": "node scripts/generate-icons.mjs"
@@ -24,18 +25,21 @@
   "devDependencies": {
     "@resvg/resvg-js": "^2.6.2",
     "@tailwindcss/vite": "^4.0.0",
+    "@testing-library/react": "16.3.2",
     "@types/leaflet": "^1.9.22",
     "@types/node": "^22.0.0",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
     "@vitejs/plugin-react": "^6.0.0",
-    "oxfmt": "^0.2.0",
+    "jsdom": "27.4.0",
+    "oxfmt": "^0.40.0",
     "tailwindcss": "^4.0.0",
     "typescript": "^5.7.0",
-    "vite": "^8.0.5"
+    "vite": "^8.0.5",
+    "vitest": "4.0.18"
   },
-  "packageManager": "pnpm@10.34.3",
   "engines": {
-    "node": ">=22"
-  }
+    "node": ">=22.12.0"
+  },
+  "packageManager": "pnpm@10.34.3"
 }

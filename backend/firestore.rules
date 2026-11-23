@@ -39,7 +39,17 @@ service cloud.firestore {
     // Ônibus: leitura por qualquer usuário autenticado (passageiros precisam
     // ver ônibus). Escrita bloqueada, inclusive `active_driver_id`.
     match /buses/{busId} {
-      allow read: if signedIn();
+      // Passageiros usam public_buses: vínculos internos ficam restritos.
+      allow read: if signedIn() && (
+        resource.data.active_driver_id == request.auth.uid ||
+        (hasRole('dono_frota') && resource.data.fleet_owner_id == request.auth.uid)
+      );
+      allow write: if false;
+    }
+
+    // Catálogo sanitizado por ferramenta administrativa; anônimo autenticado pode ler.
+    match /{collection}/{id} {
+      allow read: if signedIn() && collection in ['public_lines', 'public_stops', 'public_buses', 'public_notices'];
       allow write: if false;
     }
 

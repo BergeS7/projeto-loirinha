@@ -30,7 +30,7 @@ export type RouteBody = {
 /** Rota devolvida por `getBusRoute` e `getMyRoute` (sem `fleet_owner_id`). */
 export type Route = RouteBody & { routeId: string }
 
-/** Documento `buses/{busId}` (Firestore). Legível por qualquer usuário autenticado. */
+/** Documento privado `buses/{busId}`: somente motorista ativo ou dono da frota. */
 export type BusDoc = {
   tag_code: string
   plate?: string

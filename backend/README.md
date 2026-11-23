@@ -11,6 +11,8 @@ Os guias `CHECKIN_GUIDE.md` e `TELEMETRY_GUIDE.md` estão desatualizados. Use-os
 
 ## Estrutura
 
+A integração do passageiro já existe: catálogo público validado, projeção GPS/ETA e adaptador Firebase no frontend. Procedimento atual: [INTEGRACAO.md](../docs/INTEGRACAO.md); validação: [VALIDACAO.md](../docs/VALIDACAO.md). O acesso a `buses` privado agora é restrito ao motorista ativo e ao dono da frota; passageiros leem `public_buses`.
+
 ```
 backend/
   firebase.json, .firebaserc        Emuladores, functions, regras e alvo do RTDB

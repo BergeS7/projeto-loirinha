@@ -2,41 +2,82 @@
  * Mapa base do app (Leaflet + OpenStreetMap), usado na tela inicial, no detalhe da linha e no
  * acompanhamento do ônibus.
  */
+
 import { useEffect, useMemo } from "react"
+
 import { CircleMarker, MapContainer, Polyline, TileLayer, useMap } from "react-leaflet"
+
 import { CENTRO_SANTA_INES } from "../../config/constants"
-import { getRoutePath } from "../../lib/route"
+
+import { getRoutePath, pointAlong } from "../../lib/route"
+
 import type { Coordenada, LinhaResumo, Onibus, Ponto } from "../../types/transit"
+
 import BusMarker from "./BusMarker"
+
 import StopMarker from "./StopMarker"
 
 function MapController({ center, follow, fitTo }: { center: Coordenada; follow?: Coordenada; fitTo?: Coordenada[] }) {
   const map = useMap()
+  const following = Boolean(follow)
+
+  // Leaflet precisa recalcular tiles quando painel, orientação ou viewport mudam de tamanho.
+  useEffect(() => {
+    if (typeof ResizeObserver === "undefined") return
+    const observer = new ResizeObserver(() => {
+      map.invalidateSize({ pan: false })
+      if (fitTo && fitTo.length > 1 && !following) map.fitBounds(fitTo, { padding: [28, 28] })
+    })
+    observer.observe(map.getContainer())
+    return () => observer.disconnect()
+  }, [map, fitTo, following])
+
   useEffect(() => {
     if (fitTo && fitTo.length > 1 && !follow) map.fitBounds(fitTo, { padding: [28, 28] })
-    else map.flyTo(follow ?? center, follow ? 16 : map.getZoom(), { duration: 0.8 })
+    else
+      map.flyTo(follow ?? center, follow ? 16 : map.getZoom(), {
+        duration: 0.8,
+      })
   }, [center, follow, fitTo, map])
+
   return null
 }
 
 type Props = {
   center?: Coordenada
+
   userPosition?: Coordenada
+
   points?: Ponto[]
+
   /** Ponto em destaque (ex.: próximo ponto do ônibus acompanhado). */
+
   highlightedPointId?: string
+
   buses?: Onibus[]
+
   /** Linhas dos ônibus exibidos, para mostrar número e cor de cada uma. */
+
   lines?: LinhaResumo[]
+
   /** Traçado (pelas ruas) de cada linha, por id: mantém os ônibus sobre a via. */
+
   tracados?: Record<string, Coordenada[]>
+
   /** Traçado desenhado no mapa. Deve seguir as ruas (venha de getTracado), nunca ligar pontos em linha reta. */
+
   route?: Coordenada[]
+
   routeColor?: string
+
   /** Enquadra o traçado inteiro ao carregar. */
+
   fitRoute?: boolean
+
   selectedBusId?: string
+
   interactive?: boolean
+
   className?: string
 }
 
@@ -44,28 +85,50 @@ type Props = {
  * Desenha o traçado da linha, os pontos fixos, os ônibus em movimento e a posição do usuário.
  * Também controla a câmera: centraliza, segue o ônibus selecionado ou enquadra o traçado inteiro.
  */
+
 export default function TransitMap({
   center = CENTRO_SANTA_INES,
+
   userPosition,
+
   points = [],
+
   highlightedPointId,
+
   buses = [],
+
   lines = [],
+
   tracados,
+
   route,
+
   routeColor = "#f5b800",
+
   fitRoute = false,
+
   selectedBusId,
+
   interactive = true,
+
   className = "",
 }: Props) {
   const followed = buses.find((bus) => bus.id === selectedBusId)
-  const followPosition = useMemo<Coordenada | undefined>(
-    () => (followed ? [followed.lat, followed.lng] : undefined),
-    [followed?.lat, followed?.lng],
-  )
+
+  const followPosition = useMemo<Coordenada | undefined>(() => {
+    if (!followed) return undefined
+
+    const coords = tracados?.[followed.linhaId]
+
+    return coords?.length && !followed.offRoute
+      ? pointAlong(getRoutePath(coords), followed.progresso).position
+      : [followed.lat, followed.lng]
+  }, [followed?.lat, followed?.lng, followed?.progresso, followed?.linhaId, followed?.offRoute, tracados])
+
   const lineById = useMemo(() => new Map(lines.map((line) => [line.id, line])), [lines])
+
   // Itinerários circulares repetem o ponto inicial no fim: um marcador por ponto basta.
+
   const uniquePoints = useMemo(() => [...new Map(points.map((point) => [point.id, point])).values()], [points])
 
   return (
@@ -95,14 +158,31 @@ export default function TransitMap({
           key={bus.id}
           bus={bus}
           line={lineById.get(bus.linhaId)}
-          path={tracados?.[bus.linhaId]?.length ? getRoutePath(tracados[bus.linhaId]) : undefined}
+          path={!bus.offRoute && tracados?.[bus.linhaId]?.length ? getRoutePath(tracados[bus.linhaId]) : undefined}
           selected={bus.id === selectedBusId}
         />
       ))}
       {userPosition && (
         <>
-          <CircleMarker center={userPosition} radius={13} pathOptions={{ fillColor: "#2d7ff9", fillOpacity: 0.16, stroke: false }} />
-          <CircleMarker center={userPosition} radius={6} pathOptions={{ fillColor: "#2d7ff9", fillOpacity: 1, color: "white", weight: 2 }} />
+          <CircleMarker
+            center={userPosition}
+            radius={13}
+            pathOptions={{
+              fillColor: "#2d7ff9",
+              fillOpacity: 0.16,
+              stroke: false,
+            }}
+          />
+          <CircleMarker
+            center={userPosition}
+            radius={6}
+            pathOptions={{
+              fillColor: "#2d7ff9",
+              fillOpacity: 1,
+              color: "white",
+              weight: 2,
+            }}
+          />
         </>
       )}
       <MapController center={center} follow={followPosition} fitTo={fitRoute ? route : undefined} />

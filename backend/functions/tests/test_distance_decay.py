@@ -56,13 +56,20 @@ def test_ciclos_sucessivos_e_piso_em_zero(root):
     lost(10, 0),                    # parado
     lost(10, -5), lost(10, "60"), lost(10, None),
     lost(None),                     # sem distance
-    lost(-1), lost("10"), lost(float("nan")),
+    lost(-1), lost("10"),
 ], ids=["online", "speed0", "speed_neg", "speed_txt", "speed_none",
-        "sem_distance", "distance_neg", "distance_txt", "distance_nan"])
+        "sem_distance", "distance_neg", "distance_txt"])
 def test_nao_mexe_quando_nao_deve(root, node):
     root.child("b1").set(node)
+    # RTDB remove propriedades null: compara com o que foi efetivamente persistido.
+    before = root.child("b1").get()
     assert dd.tick(root, 30).adjusted == []
-    assert root.child("b1").get() == node
+    assert root.child("b1").get() == before
+
+
+def test_nan_e_rejeitado_antes_de_serializar_json():
+    """NaN não existe no JSON do RTDB; sua rejeição pertence à função pura."""
+    assert dd.next_distance(lost(float("nan"))) is None
 
 
 def test_varios_onibus_so_os_perdidos(root):

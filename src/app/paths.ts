@@ -4,6 +4,7 @@ export const paths = {
   buscar: "/buscar",
   favoritos: "/favoritos",
   avisos: "/avisos",
+  conta: "/conta",
   ponto: (id: string) => `/ponto/${encodeURIComponent(id)}`,
   linha: (id: string) => `/linha/${encodeURIComponent(id)}`,
   acompanhar: (linhaId: string, onibusId: string) =>

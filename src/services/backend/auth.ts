@@ -1,7 +1,6 @@
 /**
  * Login no Firebase Authentication. O papel vem da custom claim `role` do token (nunca de
- * `users.role`). O cadastro de contas ainda não existe no backend: use as contas de teste do
- * emulador (docs/backend/BACKEND.md, seção 4).
+ * `users.role`). Cadastro e recuperação estão em accounts.ts e docs/CONTAS.md.
  */
 import { onAuthStateChanged, signInWithEmailAndPassword, signOut as firebaseSignOut, type User } from "firebase/auth"
 import { getFirebase } from "../../config/firebase"

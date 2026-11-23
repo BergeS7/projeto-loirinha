@@ -8,3 +8,57 @@
   white-space: nowrap;
 }
 
+/* Estado dos dados e identificação explícita do ambiente de demonstração. */
+.data-status {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: #eaf5ef;
+  font-size: 12px;
+}
+.data-status-warning {
+  background: #fff0ce;
+  color: #694600;
+}
+.demo-banner {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 24px;
+  z-index: 2000;
+  padding: 4px 12px;
+  background: #fff2bd;
+  color: #4c3900;
+  font-size: 11px;
+  text-align: center;
+  pointer-events: none;
+}
+/* Reserva espaço para avisos sem encobrir cabeçalhos ou controles em telas pequenas. */
+.app-shell {
+  --demo-offset: 0px;
+  --offline-offset: 0px;
+  --status-offset: calc(var(--demo-offset) + var(--offline-offset));
+}
+.app-shell.has-demo {
+  --demo-offset: 24px;
+}
+.app-shell.has-offline {
+  --offline-offset: 44px;
+}
+.app-shell .app-content {
+  padding-top: var(--status-offset);
+}
+.app-shell .home-page,
+.app-shell .track-page {
+  top: var(--status-offset);
+}
+.app-shell .offline-banner {
+  top: var(--demo-offset);
+  height: 44px;
+  display: grid;
+  place-items: center;
+}
