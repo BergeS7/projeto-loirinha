@@ -1,23 +1,35 @@
 /** Hook genérico de carregamento assíncrono usado por todos os hooks de dados. */
+
 import { type DependencyList, useCallback, useEffect, useRef, useState } from "react"
 
 /**
  * Função que busca os dados. Recebe um AbortSignal, que é cancelado quando a tela muda ou o
  * componente sai da tela.
  */
+
 export type Loader<T> = (signal: AbortSignal) => Promise<T>
 
 /** Estado devolvido por useAsyncData. */
+
 export type AsyncData<T> = {
   data: T | undefined
+
   error: unknown
+
   /** Verdadeiro só enquanto ainda não há dados para mostrar. */
+
   loading: boolean
+
+  /** Instante da última resposta válida; permite sinalizar dados antigos. */
+
+  updatedAt?: number
+
   reload: () => void
 }
 
 type Options = {
   /** Recarrega em segundo plano a cada N ms, mantendo os dados atuais na tela. */
+
   refreshInterval?: number
 }
 
@@ -26,11 +38,24 @@ type Options = {
  * Passe `null` como loader para não carregar nada (ex.: busca vazia).
  * Quando `deps` mudam, os dados anteriores são descartados e a carga recomeça.
  */
-export default function useAsyncData<T>(loader: Loader<T> | null, deps: DependencyList, options: Options = {}): AsyncData<T> {
+
+export default function useAsyncData<T>(
+  loader: Loader<T> | null,
+  deps: DependencyList,
+  options: Options = {},
+): AsyncData<T> {
   const { refreshInterval } = options
+
   const enabled = loader !== null
-  const [state, setState] = useState<Omit<AsyncData<T>, "reload">>({ data: undefined, error: undefined, loading: enabled })
+
+  const [state, setState] = useState<Omit<AsyncData<T>, "reload">>({
+    data: undefined,
+    error: undefined,
+    loading: enabled,
+  })
+
   const loaderRef = useRef(loader)
+
   const runRef = useRef<() => void>(() => {})
 
   useEffect(() => {
@@ -39,34 +64,65 @@ export default function useAsyncData<T>(loader: Loader<T> | null, deps: Dependen
 
   useEffect(() => {
     setState({ data: undefined, error: undefined, loading: enabled })
+
     if (!enabled) return
 
     let controller: AbortController | undefined
+
+    let active = true
+
+    let running = false
+
     const run = async () => {
-      controller?.abort()
+      // Uma consulta lenta termina antes da próxima: polling nunca a interrompe.
+
+      if (!active || running) return
+
+      running = true
+
       const current = new AbortController()
+
       controller = current
+
       setState((prev) => (prev.data === undefined ? { ...prev, loading: true, error: undefined } : prev))
 
       try {
         const data = await loaderRef.current!(current.signal)
-        if (!current.signal.aborted) setState({ data, error: undefined, loading: false })
+
+        if (!current.signal.aborted)
+          setState({
+            data,
+            error: undefined,
+            loading: false,
+            updatedAt: Date.now(),
+          })
       } catch (error) {
-        if (!current.signal.aborted) setState((prev) => ({ data: prev.data, error, loading: false }))
+        if (!current.signal.aborted) setState((prev) => ({ ...prev, error, loading: false }))
+      } finally {
+        running = false
       }
     }
 
     runRef.current = run
+
     run()
+
     const timer = refreshInterval ? window.setInterval(run, refreshInterval) : undefined
 
     return () => {
+      active = false
+
+      runRef.current = () => {}
+
       controller?.abort()
+
       window.clearInterval(timer)
     }
+
     // `deps` vem de quem chama, como em useEffect.
   }, [enabled, refreshInterval, ...deps])
 
   const reload = useCallback(() => runRef.current(), [])
+
   return { ...state, reload }
 }

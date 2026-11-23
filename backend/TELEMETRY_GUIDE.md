@@ -1,15 +1,5 @@
 # Guia: telemetria GPS + heartbeat (Firebase Emulator Suite)
 
-> **⚠️ Guia desatualizado.** A referência atual do backend é a documentação técnica de 21/10/2026:
-> [`docs/backend/documentacao_backend_firebase_emulator_frontend.pdf`](../docs/backend/documentacao_backend_firebase_emulator_frontend.pdf)
-> e o resumo em [`docs/backend/BACKEND.md`](../docs/backend/BACKEND.md). Quando este guia e a documentação divergirem, vale a documentação.
->
-> Pontos já sabidamente desatualizados aqui:
-> - O check-out **existe** (`checkOut`), mas não remove a telemetria: chame `endTelemetry` antes do `checkOut`.
-> - Os exemplos usam `bus_01` (frota B, livre). Para testar com os dados do export use `bus1` com `motorista1@example.test`.
-> - Em `telemetry_demo.py seed` e `old` o argumento `--bus` não tem padrão: informe sempre.
-> - Caminhos antigos: rode os comandos dentro da pasta `backend/` deste repositório.
-
 Tudo roda **localmente** nos emuladores, com o projeto `loirinha-1a25f` (Functions em `southamerica-east1`), com dados fictícios. Nenhum deploy, nada de produção.
 
 ## 1\. Arquitetura

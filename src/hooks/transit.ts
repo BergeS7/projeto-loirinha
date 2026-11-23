@@ -2,65 +2,87 @@
  * Hooks de dados de transporte. São a única porta de entrada das telas para os dados: cada hook
  * chama o transitService e devolve { data, error, loading, reload } (veja useAsyncData).
  */
+
 import { PONTOS_PROXIMOS_LIMITE, REFRESH_INTERVAL } from "../config/constants"
+
 import { transitService } from "../services/transit"
+
 import type { Coordenada } from "../types/transit"
+
 import useAsyncData from "./useAsyncData"
 
+import { useEffect, useState } from "react"
+
+import type { Onibus } from "../types/transit"
+
 /** Todas as linhas. */
+
 export function useLinhas() {
   return useAsyncData((signal) => transitService.getLinhas({ signal }), [])
 }
 
 /** Uma linha pelo id. `data` fica `null` quando a linha não existe. */
+
 export function useLinha(id: string) {
   return useAsyncData((signal) => transitService.getLinha(id, { signal }), [id])
 }
 
 /** Pontos da linha, na ordem do percurso. */
+
 export function useItinerario(linhaId: string) {
   return useAsyncData((signal) => transitService.getItinerario(linhaId, { signal }), [linhaId])
 }
 
 /** Traçado da linha pelas ruas (sequência de coordenadas). */
+
 export function useTracado(linhaId: string) {
   return useAsyncData((signal) => transitService.getTracado(linhaId, { signal }), [linhaId])
 }
 
 /** Traçados de várias linhas, por id. Usado para manter os ônibus sobre as ruas no mapa geral. */
+
 export function useTracados(linhaIds: string[]) {
   const chave = [...linhaIds].sort().join(",")
+
   return useAsyncData(
     linhaIds.length > 0
       ? async (signal) => {
           const tracados = await Promise.all(linhaIds.map((id) => transitService.getTracado(id, { signal })))
+
           return Object.fromEntries(linhaIds.map((id, i) => [id, tracados[i]])) as Record<string, Coordenada[]>
         }
       : null,
+
     [chave],
   )
 }
 
 /** Todos os pontos de ônibus. */
+
 export function usePontos() {
   return useAsyncData((signal) => transitService.getPontos({ signal }), [])
 }
 
 /** Um ponto pelo id. `data` fica `null` quando o ponto não existe. */
+
 export function usePonto(id: string) {
   return useAsyncData((signal) => transitService.getPonto(id, { signal }), [id])
 }
 
 /** Sem posição (`undefined`), não carrega nada. */
+
 export function usePontosProximos(posicao: Coordenada | undefined, limite = PONTOS_PROXIMOS_LIMITE) {
   const [lat, lng] = posicao ?? []
+
   return useAsyncData(
     posicao ? (signal) => transitService.getPontosProximos(posicao, limite, { signal }) : null,
+
     [lat, lng, limite],
   )
 }
 
 /** Próximos ônibus previstos para o ponto, atualizados automaticamente. */
+
 export function usePrevisoes(pontoId: string) {
   return useAsyncData((signal) => transitService.getPrevisoes(pontoId, { signal }), [pontoId], {
     refreshInterval: REFRESH_INTERVAL.previsoes,
@@ -68,20 +90,55 @@ export function usePrevisoes(pontoId: string) {
 }
 
 /** Avisos da operação (atrasos, desvios, informações). */
+
 export function useAvisos() {
   return useAsyncData((signal) => transitService.getAvisos({ signal }), [])
 }
 
 /** Termo vazio não dispara busca. */
+
 export function useBusca(termo: string) {
   const busca = termo.trim()
+
   return useAsyncData(busca ? (signal) => transitService.buscar(busca, { signal }) : null, [busca])
 }
 
 /** Posições dos ônibus, atualizadas automaticamente. */
+
 export function useBusPositions(linhaId?: string) {
-  const { data } = useAsyncData((signal) => transitService.getOnibus(linhaId, { signal }), [linhaId], {
+  const realtime = Boolean(transitService.subscribeOnibus)
+
+  const polling = useAsyncData(realtime ? null : (signal) => transitService.getOnibus(linhaId, { signal }), [linhaId], {
     refreshInterval: REFRESH_INTERVAL.posicoesOnibus,
   })
-  return data ?? []
+
+  const [live, setLive] = useState<{
+    data?: Onibus[]
+    error?: unknown
+    loading: boolean
+    updatedAt?: number
+  }>({ loading: realtime })
+
+  const [attempt, setAttempt] = useState(0)
+
+  useEffect(() => {
+    if (!transitService.subscribeOnibus) return
+
+    setLive({ loading: true })
+
+    return transitService.subscribeOnibus(
+      linhaId,
+
+      (data) =>
+        setLive({
+          data,
+          loading: false,
+          updatedAt: data.length ? Math.min(...data.map((bus) => bus.updatedAt ?? Date.now())) : Date.now(),
+        }),
+
+      (error) => setLive((previous) => ({ ...previous, error, loading: false })),
+    )
+  }, [linhaId, attempt])
+
+  return realtime ? { ...live, reload: () => setAttempt((value) => value + 1) } : polling
 }

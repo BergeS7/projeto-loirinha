@@ -3,31 +3,48 @@
  * principal. No celular a navegação fica embaixo; em telas largas vira um menu lateral com a logo
  * (veja styles/responsive.css).
  */
-import { Bell, Heart, Map, Search } from "lucide-react"
+
+import { Bell, Heart, Map, Search, UserRound } from "lucide-react"
+
 import { NavLink, Outlet } from "react-router"
+
 import { paths } from "../../app/paths"
+
 import BrandLogo from "../ui/BrandLogo"
+
 import useOnlineStatus from "../../hooks/useOnlineStatus"
+
+import { env } from "../../config/env"
 
 const navItems = [
   { to: paths.home, label: "Mapa", icon: Map },
+
   { to: paths.buscar, label: "Buscar", icon: Search },
+
   { to: paths.favoritos, label: "Favoritos", icon: Heart },
+
   { to: paths.avisos, label: "Avisos", icon: Bell },
+  { to: paths.conta, label: "Conta", icon: UserRound },
 ]
 
 /** Layout raiz usado por todas as rotas. */
+
 export default function RootLayout() {
   const online = useOnlineStatus()
 
   return (
-    <div className="app-shell">
+    <div className={`app-shell ${env.dataSource === "mock" ? "has-demo" : ""} ${!online ? "has-offline" : ""}`}>
       {!online && (
         <div className="offline-banner" role="status">
-          Você está sem internet. Mostrando os últimos dados carregados.
+          Você está sem internet. As posições e previsões podem estar desatualizadas.
         </div>
       )}
       <main className="app-content" id="conteudo">
+        {env.dataSource === "mock" && (
+          <div className="demo-banner" role="status">
+            Demonstração · ônibus e previsões simulados
+          </div>
+        )}
         <Outlet />
       </main>
       <nav className="main-nav" aria-label="Navegação principal">

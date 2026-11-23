@@ -16,6 +16,7 @@ const TrackBusPage = lazy(() => import("../pages/TrackBusPage"))
 const FavoritesPage = lazy(() => import("../pages/FavoritesPage"))
 const NoticesPage = lazy(() => import("../pages/NoticesPage"))
 const NotFoundPage = lazy(() => import("../pages/NotFoundPage"))
+const AccountPage = lazy(() => import("../pages/AccountPage"))
 
 // Envolve a tela em Suspense: mostra o carregamento enquanto o código dela é baixado.
 const page = (Component: React.LazyExoticComponent<React.ComponentType>) => (
@@ -41,6 +42,7 @@ export const router = createBrowserRouter(
         { path: "acompanhar/:linhaId/:onibusId", element: page(TrackBusPage) },
         { path: "favoritos", element: page(FavoritesPage) },
         { path: "avisos", element: page(NoticesPage) },
+        { path: "conta/*", element: page(AccountPage) },
         { path: "*", element: page(NotFoundPage) },
       ],
     },

@@ -23,3 +23,9 @@ logs/
 
 # Configuração local do Claude Code
 /.claude/
+
+# Ambientes e caches Python locais; nunca fazem parte do deploy ou revisão.
+venv/
+__pycache__/
+.pytest_cache/
+.artifacts/

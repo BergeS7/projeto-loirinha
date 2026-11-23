@@ -1,25 +1,9 @@
-r"""Redefine a senha de uma conta no Auth EMULATOR (nunca em produção).
-
-Uso (PowerShell, na pasta backend/, com o Auth Emulator rodando):
-
-  $env:NOVA_SENHA = "<senha de teste>"
-  functions\venv\Scripts\python.exe scripts\redefinir_senha_motorista.py [UID]
-
-A senha vem da variável de ambiente NOVA_SENHA, para não ficar no código
-versionado (recomendação da documentação do backend, seção 3.3).
-"""
-import os
-import sys
-
-from firebase_admin import auth
+﻿from firebase_admin import auth
 from emulator_auth import emulator_admin_app
 
 PROJECT = "loirinha-1a25f"
-UID = sys.argv[1] if len(sys.argv) > 1 else "Hszew14NUMvjq8MipIoOgv7oiOSu"
-NEW_PASSWORD = os.environ.get("NOVA_SENHA", "")
-
-if len(NEW_PASSWORD) < 6:
-    sys.exit("Defina NOVA_SENHA (mínimo de 6 caracteres) antes de rodar o script.")
+UID = "Hszew14NUMvjq8MipIoOgv7oiOSu"
+NEW_PASSWORD = "TesteTelemetria#2026"
 
 app = emulator_admin_app(PROJECT)
 
@@ -37,6 +21,7 @@ try:
     print("SENHA REDEFINIDA COM SUCESSO")
     print("UID:", user.uid)
     print("Email:", user.email)
+    print("Nova senha de teste:", NEW_PASSWORD)
 
 except auth.UserNotFoundError:
     print("ERRO: usuario nao encontrado. Nenhuma conta foi criada.")

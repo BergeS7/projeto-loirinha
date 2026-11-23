@@ -1,15 +1,5 @@
 # Guia: check-in de motoristas (Firebase Emulator Suite)
 
-> **⚠️ Guia desatualizado.** A referência atual do backend é a documentação técnica de 21/10/2026:
-> [`docs/backend/documentacao_backend_firebase_emulator_frontend.pdf`](../docs/backend/documentacao_backend_firebase_emulator_frontend.pdf)
-> e o resumo em [`docs/backend/BACKEND.md`](../docs/backend/BACKEND.md). Quando este guia e a documentação divergirem, vale a documentação.
->
-> Pontos já sabidamente desatualizados aqui:
-> - O check-out **existe**: a callable `checkOut` e os testes `test_checkout.py` (seção 4.4 da documentação).
-> - `scripts/start-emulators.ps1` sobe **4** emuladores (firestore, auth, functions, database), não 3.
-> - Rotas com `fleet_owner_id` **não** são legíveis por todos: só o dono da frota as lê; o motorista usa `getMyRoute`.
-> - Caminhos como `C:\projects\ah_fire\ah_fire` são antigos: rode os comandos dentro da pasta `backend/` deste repositório.
-
 Tudo roda **localmente**, nos **emuladores**, usando o projeto `loirinha-1a25f` (região das Functions e do Firestore: `southamerica-east1`), apenas com dados fictícios. Nenhum deploy é feito. As URLs das Functions seguem `http://127.0.0.1:5001/loirinha-1a25f/southamerica-east1/<função>`.
 
 ## 1. Arquivos criados / modificados

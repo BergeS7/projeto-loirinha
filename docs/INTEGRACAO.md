@@ -1,65 +1,111 @@
 # Integração front-end ↔ backend Firebase
 
-Referência do backend: [`docs/backend/BACKEND.md`](backend/BACKEND.md), um resumo do
-[PDF de 21/10/2026](backend/documentacao_backend_firebase_emulator_frontend.pdf), que é a fonte da verdade.
-Contrato atual do front: [`docs/API.md`](API.md).
+O backend em `backend/` é **exatamente o do `projeto-loirinha-main.zip`**, sem alterações; só o `README.md`
+foi acrescentado. A referência do backend é o [PDF de 21/10/2026](backend/documentacao_backend_firebase_emulator_frontend.pdf),
+com resumo em [`docs/backend/BACKEND.md`](backend/BACKEND.md).
 
-## 1. Onde estamos
+## 1. O que o front usa do backend
 
-| Peça | Situação |
-| --- | --- |
-| Front (raiz do repositório) | PWA de passageiro funcionando com dados simulados. As telas leem `services/transit` pelos hooks de `hooks/transit.ts` |
-| Backend (`backend/`) | Firebase com check-in, rotas por frota e telemetria. Atende **motorista e dono de frota** |
-| Ponte já pronta no front | `src/config/firebase.ts` (SDK + emuladores) e `src/services/backend/` (login, as 8 callables, telemetria em tempo real e tradução de erros). **Ainda não é usada pelas telas** |
-
-O front fala "português e camelCase" (`Linha`, `Ponto`, `Onibus`) e espera REST. O backend usa callables e
-Firestore/RTDB em snake_case, e exige login para tudo. A ponte converte uma coisa na outra, sem mudar as telas.
-
-## 2. O que cada tela precisa x o que o backend tem
-
-| Método do `TransitService` | Dado no backend | Situação |
+| Tela (item **Conta**) | Backend usado | Situação |
 | --- | --- | --- |
-| `getOnibus(linhaId?)` | `/telemetry/{busId}` (posição, velocidade, status, online) + `buses/{busId}` (placa) | **Parcial.** Falta: ligação ônibus → linha visível ao passageiro, `progresso` sobre o traçado, `lotacao`, `proximoPontoId` e `minutosProximoPonto` |
-| `getLinhas`, `getLinha` | `routes` (`name`, `color_hex_route`, `stops`) | **Bloqueado (D3).** Rota com `fleet_owner_id` só é lida pelo dono, e as 3 do export têm o campo. Faltam também `numero`, `operacao` e `intervalo` |
-| `getItinerario` | `routes.stops` (`name`, `latitude`, `longitude`, `order`) | **Bloqueado (D3).** As paradas não têm `id` próprio nem `referencia` |
-| `getTracado` | — | **Não existe.** É preciso gravar o traçado pelas ruas (OSRM, Valhalla ou GPS) |
-| `getPontos`, `getPonto`, `getPontosProximos` | — | **Não existe.** As paradas só existem dentro de cada rota |
-| `getPrevisoes` | `eta_minutes` / `predicted_arrival_ms` (funções puras, sem callable) | **Não existe (D8)** |
-| `getAvisos` | — | **Não existe** |
-| `buscar` | — | **Não existe.** Pode ser feito no cliente sobre linhas e pontos |
+| Login, sair, recuperar senha | Firebase Authentication (e-mail e senha) | ✅ Testado nos emuladores |
+| Motorista: ônibus atual | Firestore `buses` onde `active_driver_id == uid` | ✅ Testado |
+| Motorista: check-in, encerrar expediente | `checkIn`, `endTelemetry` + `checkOut` | ✅ Testado (unitário + backend E2E) |
+| Motorista: minha rota | `getMyRoute` | ✅ Testado |
+| Motorista: envio de GPS a cada 15 s | `sendTelemetry` | ✅ Testado com GPS simulado |
+| Dono: ônibus, motoristas e rotas da frota | Firestore com `where("fleet_owner_id", "==", uid)` | ✅ Testado |
+| Dono: rota em andamento de um ônibus | `getBusRoute` | ✅ Testado |
+| Dono: atribuir rota a motorista | `setDriverRoute` | ✅ Testado |
+| Dono: cadastrar rota | `createRoute` | ✅ Testado |
+| Dono e passageiro: ônibus ao vivo | RTDB `/telemetry` + Firestore `buses/{id}` (placa) | ✅ Testado |
 
-Já dá para usar hoje: login, papel do usuário, check-in e check-out, rotas do dono e do motorista, envio e
-leitura de telemetria. Ou seja, as telas de **motorista** e **dono de frota** (D11) podem ser feitas agora.
+O papel vem sempre da claim `role` do token. Cada papel só vê a própria área (`/conta/motorista`,
+`/conta/frota` ou `/conta/perfil`), e o backend revalida tudo.
 
-## 3. Decisões que destravam o passageiro
+## 2. O que ficou com dados simulados, e por quê
 
-Detalhes na seção 9 do PDF.
+As telas públicas (mapa, linhas, pontos, previsões, avisos e busca) continuam com os dados simulados de
+`src/services/transit/mock`, com o aviso "Demonstração". O backend original não tem nada disso para o passageiro:
 
-1. **D3, rotas para passageiro.** Proposta: uma coleção pública `lines` (ou uma callable `listLines`), mantida pelo
-   backend, com número, nome, cor, horário, intervalo, paradas com `id` e traçado. A rota da frota continua privada.
-2. **D4, privacidade de `buses`.** Hoje qualquer autenticado vê `active_driver_id` e `fleet_owner_id`. Proposta: o passageiro
-   lê só uma projeção pública (por exemplo `public_buses/{busId}`: prefixo, linha e lotação), escrita pelo backend.
-3. **Login do passageiro.** As regras exigem `auth != null`. Proposta: `signInAnonymously` para passageiros (exige
-   habilitar o provedor anônimo) ou leitura via callable pública.
-4. **D8, ETA.** Proposta: o backend calcula `progresso` e o próximo ponto no `sendTelemetry`, projetando o GPS no traçado, e grava
-   isso no nó. O front calcula só o tempo até o ponto do usuário, sem enviar a posição dele.
-5. **D5, tempo real.** Trocar o polling de 3 s (`useBusPositions`) por `onValue` em `/telemetry` (`subscribeTelemetry`).
+- As rotas com `fleet_owner_id` só são lidas pelo dono da frota (decisão **D3** do PDF), e todas as rotas do export têm esse campo.
+- Não existem pontos com `id`, traçado pelas ruas, lotação, previsões nem avisos.
+- Não há ligação direta entre ônibus e linha.
 
-## 4. Próximos passos sugeridos
+Quando o backend tiver esses dados, basta criar uma implementação do `TransitService` (como `apiTransitService.ts`).
+As telas não mudam.
 
-1. Subir os emuladores com uma cópia dos dados (`docs/backend/BACKEND.md`, seção 5) e copiar `.env.example` para `.env.local`.
-2. Testar a ponte: login com `motorista1@example.test`, `getMyRoute()` e `subscribeBusTelemetry("bus1", …)`.
-3. Reunião de decisões D3, D4, D5, D8, D10 e D11.
-4. Backend: implementar as decisões (coleção pública de linhas e pontos, projeção pública de ônibus, `progresso`).
-5. Front: criar `src/services/transit/firebaseTransitService.ts`, implementando o `TransitService` com
-   `src/services/backend`, e acrescentar `VITE_DATA_SOURCE=firebase` em `src/config/env.ts` e `services/transit/index.ts`.
-   As telas não mudam.
-6. Front: telas de motorista e dono, se o grupo decidir que o React cobre esses papéis (D11).
+**O que o app não faz, porque o backend não permite:**
+- cadastro de contas (não há function; uma conta criada pelo app nasceria sem papel);
+- cadastrar, ativar ou desativar motoristas e ônibus;
+- editar ou excluir rotas.
 
-## 5. Regras para quem for integrar
+## 3. Como rodar tudo localmente
 
-- Nunca confie no front para segurança. Esconder um botão é só interface; quem protege é o backend.
-- O papel vem de `getRole()` (claim do token), nunca de `users.role`. Depois de mudar o papel, use `getRole(true)`.
-- Trate os erros pelo `reason` de `BackendError`. Com `precisaLogin`, mande o usuário para o login.
-- Não use `createUserWithEmailAndPassword`: a conta nasce sem claim e sem `users/{uid}`, e nenhuma function a aceita.
-- Nunca aponte o front ou os scripts para o projeto real sem combinar. `loirinha-1a25f` é o ID de produção.
+Pré-requisitos: Node 22+, pnpm, Firebase CLI (`npm i -g firebase-tools`), Java 21+ e Python 3.14.
+
+### 3.1 Backend (dentro de `backend/`)
+
+```powershell
+py -V:3.14 -m venv functions\venv
+functions\venv\Scripts\python.exe -m pip install -r functions\requirements.txt -r functions\requirements-dev.txt
+firebase login            # IMPORTANTE, ver 3.3
+Copy-Item -Recurse .\emulator-data $env:TEMP\emulator-data-copia
+firebase emulators:start --only "firestore,auth,functions,database" --project loirinha-1a25f --import $env:TEMP\emulator-data-copia
+```
+
+### 3.2 Front (na raiz)
+
+```powershell
+Copy-Item .env.example .env.local    # já vem apontando para os emuladores
+pnpm install
+pnpm dev                             # http://localhost:8443/conta
+```
+
+Contas de teste: `motorista1@example.test`, `dono@example.test` e `passageiro@example.test`. A senha é a
+constante `PASSWORD` de `backend/scripts/seed_and_call.py`.
+
+### 3.3 Por que o `firebase login` é obrigatório
+
+Sem login no Firebase CLI, o Functions Emulator não consegue buscar a configuração do projeto. Aparecem dois problemas,
+e nenhum dos dois é bug do código:
+
+1. **Toda callable responde 500** com "Your default credentials were not found". O Admin SDK procura credenciais do Google.
+2. **A telemetria vai para o namespace errado.** O emulador grava em `loirinha-1a25f`, enquanto as regras e o front usam
+   `loirinha-1a25f-default-rtdb`. O motorista recebe "Posição enviada", mas o mapa não mostra nada.
+
+Com `firebase login` feito por uma conta com acesso ao projeto `loirinha-1a25f`, os dois somem.
+
+Sem acesso ao projeto, dá para testar assim:
+- Defina `GOOGLE_APPLICATION_CREDENTIALS` com um arquivo `authorized_user` falso. O emulador não valida esse arquivo.
+- Grave no cache do CLI a URL do banco. É a chave `adminsdkconfig` em
+  `~/.config/configstore/firebase-tools.json`, com
+  `"databaseURL": "https://loirinha-1a25f-default-rtdb.firebaseio.com"`.
+
+Inicie os emuladores pelo **Git Bash ou cmd**. Neste ambiente, ao iniciar pelo PowerShell, o Functions Emulator falhou
+ao carregar o venv, com um erro `activate.bat ENOENT` enganoso.
+
+### 3.4 Monitor de perda de conexão
+
+Localmente, ninguém marca `connection_lost` se o `scripts\telemetry_monitor.py` não estiver rodando. O front já trata
+isso: um ônibus sem envio há mais de 45 s aparece como **Sem sinal**, usando a hora do servidor (`.info/serverTimeOffset`).
+
+## 4. Produção (Vercel)
+
+Configure as variáveis do Firebase real:
+- `VITE_FIREBASE_API_KEY`, `VITE_FIREBASE_AUTH_DOMAIN`, `VITE_FIREBASE_PROJECT_ID`, `VITE_FIREBASE_DATABASE_URL` e `VITE_FIREBASE_APP_ID`;
+- `VITE_USE_EMULATORS=false`.
+
+Sem elas, a área Conta mostra "O acesso ainda não está configurado neste ambiente". O resto do app funciona com os
+dados simulados.
+
+Antes disso, o backend precisa de deploy (functions, regras e instância RTDB). O PDF lista isso como pendente, e é
+responsabilidade de quem administra o projeto.
+
+## 5. Decisões que ainda dependem do grupo
+
+Detalhes na seção 9 do PDF:
+- **D3:** passageiro ver linhas.
+- **D4:** privacidade de `buses`. Hoje qualquer usuário logado vê `active_driver_id`.
+- **D8:** previsão de chegada.
+- **D1:** cadastro de contas.
+- **D11:** confirmar se o motorista usa este app ou o app Flutter.

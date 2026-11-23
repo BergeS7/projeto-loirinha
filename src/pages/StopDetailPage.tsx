@@ -1,25 +1,48 @@
 /** Tela do ponto (/ponto/:id): próximos ônibus previstos, atualizados automaticamente. */
+
 import { BusFront, Navigation, Users } from "lucide-react"
+
 import { Link, useParams } from "react-router"
+
 import { paths } from "../app/paths"
+
 import EmptyState from "../components/ui/EmptyState"
+
 import ErrorState from "../components/ui/ErrorState"
+
+import DataStatus from "../components/ui/DataStatus"
+
 import FavoriteButton from "../components/ui/FavoriteButton"
+
 import LoadingScreen from "../components/ui/LoadingScreen"
+
 import PageHeader from "../components/ui/PageHeader"
+
 import RouteBadge from "../components/ui/RouteBadge"
+
 import { usePonto, usePrevisoes } from "../hooks/transit"
+
 import useFavorites from "../hooks/useFavorites"
+
 import { LOTACAO_LABEL } from "../lib/format"
 
+import useOnlineStatus from "../hooks/useOnlineStatus"
+
 /** Mostra o ponto da URL e as chegadas previstas, do ônibus mais próximo ao mais distante. */
+
 export default function StopDetailPage() {
   const { id = "" } = useParams()
+
   const stop = usePonto(id)
+
   const arrivals = usePrevisoes(id)
+
+  const online = useOnlineStatus()
+
   const { isFavorite, toggle } = useFavorites()
 
   if (stop.loading) return <LoadingScreen label="Buscando chegadas..." />
+
   if (stop.error !== undefined && !stop.data) {
     return (
       <div className="page">
@@ -28,6 +51,7 @@ export default function StopDetailPage() {
       </div>
     )
   }
+
   if (!stop.data) {
     return (
       <div className="page">
@@ -38,6 +62,7 @@ export default function StopDetailPage() {
   }
 
   const point = stop.data
+
   const list = arrivals.data ?? []
 
   return (
@@ -48,12 +73,10 @@ export default function StopDetailPage() {
         action={<FavoriteButton active={isFavorite("pontos", point.id)} onClick={() => toggle("pontos", point.id)} />}
       />
       <div className="page-body">
-        <div className="update-pill">
-          <span /> Atualizando ao vivo
-        </div>
+        <DataStatus {...arrivals} onRetry={arrivals.reload} />
         <div className="section-heading roomy">
-          <h2>Próximos ônibus</h2>
-          <span>agora</span>
+          <h2>{!online || arrivals.error !== undefined ? "Últimas previsões disponíveis" : "Próximos ônibus"}</h2>
+          <span>{!online || arrivals.error !== undefined ? "sem atualização" : "agora"}</span>
         </div>
         {arrivals.loading ? (
           <div className="search-loading" role="status">
@@ -62,7 +85,11 @@ export default function StopDetailPage() {
         ) : arrivals.error !== undefined && !arrivals.data ? (
           <ErrorState error={arrivals.error} onRetry={arrivals.reload} />
         ) : list.length === 0 ? (
-          <EmptyState icon={<BusFront size={32} />} title="Nenhum ônibus previsto" description="Não há chegadas para este ponto no momento." />
+          <EmptyState
+            icon={<BusFront size={32} />}
+            title="Nenhum ônibus previsto"
+            description="Não há chegadas para este ponto no momento."
+          />
         ) : (
           <div className="arrival-list">
             {list.map((arrival) => (

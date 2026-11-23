@@ -13,23 +13,23 @@ As telas não precisam mudar.
 - Coordenadas em graus decimais (`lat`, `lng`).
 - Um recurso inexistente responde **404**. O frontend mostra "não encontrado" em vez de erro.
 - Outros erros (4xx/5xx) aparecem na tela como "Não foi possível carregar", com o botão "Tentar de novo".
-- Rotas `GET` podem ser guardadas em cache pelo service worker para uso offline (até 24 h).
+- Consultas REST usam `cache: no-store` e `NetworkOnly` no service worker. Falhas preservam somente os dados em memória, sinalizados como desatualizados.
 
 ## Endpoints
 
-| Método | Rota | Resposta | Uso |
-| --- | --- | --- | --- |
-| GET | `/linhas` | `Linha[]` | Favoritos, atalhos da tela inicial |
-| GET | `/linhas/{id}` | `Linha` ou 404 | Detalhe da linha, acompanhamento |
-| GET | `/linhas/{id}/itinerario` | `Ponto[]` na ordem do percurso | Lista de pontos da linha |
-| GET | `/linhas/{id}/tracado` | `[lat, lng][]` pelas ruas, na ordem do percurso | Desenho da linha e movimento dos ônibus |
-| GET | `/pontos` | `Ponto[]` | Favoritos |
-| GET | `/pontos/{id}` | `Ponto` ou 404 | Detalhe do ponto |
-| GET | `/pontos/proximos?lat=&lng=&limite=` | `PontoProximo[]` do mais perto ao mais longe | Tela inicial |
-| GET | `/pontos/{id}/previsoes` | `Previsao[]` do mais cedo ao mais tarde | Detalhe do ponto (a cada 15 s) |
-| GET | `/onibus?linhaId=` | `Onibus[]`. Sem `linhaId`, todos | Mapas (a cada 3 s) |
-| GET | `/avisos` | `Aviso[]` | Tela de avisos |
-| GET | `/busca?q=` | `{ linhas: Linha[], pontos: Ponto[] }` | Busca |
+| Método | Rota                                 | Resposta                                        | Uso                                     |
+| ------ | ------------------------------------ | ----------------------------------------------- | --------------------------------------- |
+| GET    | `/linhas`                            | `Linha[]`                                       | Favoritos, atalhos da tela inicial      |
+| GET    | `/linhas/{id}`                       | `Linha` ou 404                                  | Detalhe da linha, acompanhamento        |
+| GET    | `/linhas/{id}/itinerario`            | `Ponto[]` na ordem do percurso                  | Lista de pontos da linha                |
+| GET    | `/linhas/{id}/tracado`               | `[lat, lng][]` pelas ruas, na ordem do percurso | Desenho da linha e movimento dos ônibus |
+| GET    | `/pontos`                            | `Ponto[]`                                       | Favoritos                               |
+| GET    | `/pontos/{id}`                       | `Ponto` ou 404                                  | Detalhe do ponto                        |
+| GET    | `/pontos/proximos?lat=&lng=&limite=` | `PontoProximo[]` do mais perto ao mais longe    | Tela inicial                            |
+| GET    | `/pontos/{id}/previsoes`             | `Previsao[]` do mais cedo ao mais tarde         | Detalhe do ponto (a cada 15 s)          |
+| GET    | `/onibus?linhaId=`                   | `Onibus[]`. Sem `linhaId`, todos                | Mapas (a cada 3 s)                      |
+| GET    | `/avisos`                            | `Aviso[]`                                       | Tela de avisos                          |
+| GET    | `/busca?q=`                          | `{ linhas: Linha[], pontos: Ponto[] }`          | Busca                                   |
 
 ## Tipos
 
@@ -38,12 +38,12 @@ type Ponto = { id: string; nome: string; referencia: string; lat: number; lng: n
 
 type Linha = {
   id: string
-  numero: string        // "101"
-  nome: string          // "Centro • Rodoviária"
-  cor: string           // cor hexadecimal, ex.: "#eab308"
+  numero: string // "101"
+  nome: string // "Centro • Rodoviária"
+  cor: string // cor hexadecimal, ex.: "#eab308"
   pontoIds: string[]
-  operacao: string      // "05:30 às 22:40"
-  intervalo: string     // "A cada 18 min"
+  operacao: string // "05:30 às 22:40"
+  intervalo: string // "A cada 18 min"
 }
 
 type PontoProximo = Ponto & {
@@ -55,26 +55,29 @@ type Lotacao = "livre" | "moderado" | "cheio"
 
 type Onibus = {
   id: string
-  prefixo: string                     // "101-21"
+  prefixo: string // "101-21"
   linhaId: string
-  lat: number                         // posição do GPS (reserva, veja "Geografia")
+  lat: number // posição do GPS (reserva, veja "Geografia")
   lng: number
-  progresso: number                   // 0 a 1: fração do traçado já percorrida
+  progresso: number // 0 a 1: fração do traçado já percorrida
   sentido: string
-  lotacao: Lotacao
+  lotacao: Lotacao | "desconhecida"
+  connectionStatus?: "online" | "connection_lost"
+  updatedAt?: number // Unix ms da posição original, quando disponível
+  offRoute?: boolean // true: mapa usa GPS bruto
   proximoPontoId: string | null
   minutosProximoPonto: number | null
 }
 
-type Previsao = { onibusId: string; prefixo: string; linha: Linha; minutos: number; lotacao: Lotacao }
+type Previsao = { onibusId: string; prefixo: string; linha: Linha; minutos: number; lotacao: Lotacao | "desconhecida" }
 
 type Aviso = {
   id: string
   tipo: "atraso" | "desvio" | "informacao"
   titulo: string
   descricao: string
-  linhas: string[]   // números das linhas afetadas
-  horario: string    // texto já formatado, ex.: "Hoje, 10:20"
+  linhas: string[] // números das linhas afetadas
+  horario: string // texto já formatado, ex.: "Hoje, 10:20"
 }
 ```
 
@@ -101,4 +104,5 @@ do OpenStreetMap (veja o próprio script).
 
 As posições dos ônibus são consultadas por polling (`GET /onibus` a cada 3 s, em
 `src/hooks/transit.ts`). Para trocar por WebSocket ou SSE depois, altere só o
-`useBusPositions`. As telas não mudam.
+`useBusPositions`. O hook preserva também erro, carregamento, horário da resposta e retry.
+O modo Firebase já usa `TransitService.subscribeOnibus`; veja [INTEGRACAO.md](INTEGRACAO.md).

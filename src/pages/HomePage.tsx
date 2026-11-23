@@ -1,36 +1,64 @@
 /** Tela inicial (/): mapa com ônibus e pontos, busca e lista de pontos perto do usuário. */
+
 import { Bell, BusFront, ChevronRight, LocateFixed, MapPin, Search, Star } from "lucide-react"
+
 import { useState } from "react"
+
 import { Link } from "react-router"
+
 import { paths } from "../app/paths"
+
 import TransitMap from "../components/map/TransitMap"
+
 import BrandLogo from "../components/ui/BrandLogo"
+
 import ErrorState from "../components/ui/ErrorState"
+
+import DataStatus from "../components/ui/DataStatus"
+
 import { CENTRO_SANTA_INES } from "../config/constants"
+
 import { useBusPositions, useLinhas, usePontos, usePontosProximos, useTracados } from "../hooks/transit"
+
 import useFavorites from "../hooks/useFavorites"
+
 import useGeolocation from "../hooks/useGeolocation"
+
 import { saudacao } from "../lib/format"
+
 import { minutosCaminhando } from "../lib/geo"
+
 import type { Coordenada } from "../types/transit"
 
 /** Usa a localização do usuário quando permitida; se não, mostra o centro de Santa Inês. */
+
 export default function HomePage() {
   const geo = useGeolocation()
+
   const origem = geo.status === "pending" ? undefined : (geo.position ?? CENTRO_SANTA_INES)
+
   // Nova referência a cada clique em "centralizar", para o mapa voar até lá mesmo sem mudar de posição.
+
   const [mapCenter, setMapCenter] = useState<Coordenada>()
+
   const [panelOpen, setPanelOpen] = useState(false)
+
   const [locationAlert, setLocationAlert] = useState(false)
 
   const nearby = usePontosProximos(origem)
+
   const linhas = useLinhas()
+
   const allStops = usePontos()
+
   const tracados = useTracados(linhas.data?.map((linha) => linha.id) ?? [])
+
   const buses = useBusPositions()
+
   const { favorites } = useFavorites()
 
   const favoriteLines = (linhas.data ?? []).filter((line) => favorites.linhas.includes(line.id)).slice(0, 3)
+
   const nearbyPoints = nearby.data ?? []
 
   const recenter = () => {
@@ -44,7 +72,7 @@ export default function HomePage() {
         center={mapCenter ?? origem}
         userPosition={geo.position}
         points={allStops.data ?? nearbyPoints}
-        buses={buses}
+        buses={buses.data ?? []}
         lines={linhas.data}
         tracados={tracados.data}
       />
@@ -79,6 +107,7 @@ export default function HomePage() {
         </button>
         <div className="sheet-content">
           <p className="eyebrow">{saudacao()}</p>
+          <DataStatus {...buses} onRetry={buses.reload} />
           <h1>Onde vamos hoje?</h1>
           <Link to={paths.buscar} className="search-launcher">
             <Search size={21} />
@@ -117,7 +146,13 @@ export default function HomePage() {
             {nearby.error && !nearby.data ? (
               <ErrorState error={nearby.error} onRetry={nearby.reload} />
             ) : !nearby.data ? (
-              <div className="list-skeleton">{[1, 2, 3].map((item) => <span key={item} />)}</div>
+              <div className="list-skeleton">
+                {[1, 2, 3].map((item) => (
+                  <span key={item} />
+                ))}
+              </div>
+            ) : nearbyPoints.length === 0 ? (
+              <p>Nenhum ponto encontrado nesta região.</p>
             ) : (
               nearbyPoints.slice(0, panelOpen ? nearbyPoints.length : 3).map((point) => (
                 <Link to={paths.ponto(point.id)} className="nearby-row" key={point.id}>

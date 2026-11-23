@@ -1,0 +1,176 @@
+/* Formulários de acesso e operação compartilham os tokens visuais do passageiro. */
+.account-page {
+  max-width: 900px;
+  margin: auto;
+  padding: 24px 16px 40px;
+}
+.account-brand {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 24px;
+}
+.account-brand p {
+  margin: 3px 0;
+  color: var(--muted);
+  font-size: 12px;
+}
+.account-brand a {
+  margin-left: auto;
+  font-size: 13px;
+  text-decoration: underline;
+}
+.account-card {
+  background: white;
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  padding: 24px;
+  margin-bottom: 18px;
+  box-shadow: 0 8px 30px #181a1f08;
+}
+.account-card h1 {
+  font-size: 26px;
+  font-weight: 750;
+  margin-bottom: 12px;
+}
+.account-card h2 {
+  font-size: 21px;
+  font-weight: 700;
+  margin-bottom: 10px;
+}
+.account-card h3 {
+  font-weight: 700;
+  margin: 12px 0;
+}
+.account-card p {
+  color: var(--muted);
+  margin: 10px 0;
+  line-height: 1.5;
+}
+.account-card form,
+.account-card label {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.account-card form {
+  gap: 16px;
+  margin: 20px 0;
+}
+.account-card label {
+  font-weight: 600;
+  font-size: 14px;
+}
+.account-card input,
+.account-card select {
+  padding: 13px;
+  border: 1px solid #b9bdc5;
+  border-radius: 10px;
+  background: white;
+  width: 100%;
+  min-width: 0;
+}
+.account-card input:focus-visible {
+  outline: 3px solid var(--yellow);
+  outline-offset: 2px;
+}
+.account-card button:disabled {
+  opacity: 0.55;
+  cursor: wait;
+}
+.account-links,
+.account-actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 16px;
+}
+.account-links a {
+  font-size: 13px;
+  text-decoration: underline;
+}
+.account-member {
+  border-top: 1px solid var(--line);
+  padding-top: 16px;
+  margin-top: 24px;
+}
+.account-error,
+.account-success {
+  padding: 12px;
+  border-radius: 10px;
+  line-height: 1.5;
+}
+.account-error {
+  background: #ffeded;
+  color: #942828 !important;
+}
+.account-success {
+  background: #eaf5ef;
+  color: #12603f !important;
+}
+.account-card textarea {
+  padding: 13px;
+  border: 1px solid #b9bdc5;
+  border-radius: 10px;
+  font: inherit;
+  resize: vertical;
+  width: 100%;
+  min-width: 0;
+}
+.account-card input[type="color"] {
+  padding: 4px;
+  height: 44px;
+}
+.form-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 12px;
+}
+.live-map {
+  height: 320px;
+  border-radius: 14px;
+  overflow: hidden;
+  margin: 16px 0;
+  border: 1px solid var(--line);
+}
+.live-list {
+  list-style: none;
+  padding: 0;
+  margin: 12px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.live-list li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 10px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--line);
+}
+.live-list small {
+  color: var(--muted);
+  flex-basis: 100%;
+}
+.live-ok,
+.live-lost {
+  font-size: 12px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 999px;
+}
+.live-ok {
+  background: #eaf5ef;
+  color: #12603f;
+}
+.live-lost {
+  background: #f0f1f3;
+  color: #5b616b;
+}
+.route-swatch {
+  width: 14px;
+  height: 14px;
+  border-radius: 4px;
+  display: inline-block;
+}

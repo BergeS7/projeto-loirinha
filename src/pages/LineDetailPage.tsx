@@ -2,33 +2,62 @@
  * Tela da linha (/linha/:id): traçado no mapa, horário de operação, itinerário e ônibus em
  * circulação.
  */
+
 import { BusFront, ChevronRight, Clock3, MapPin } from "lucide-react"
-import { useState } from "react"
+
+import { useMemo, useState } from "react"
+
 import { Link, useParams } from "react-router"
+
 import { paths } from "../app/paths"
+
 import TransitMap from "../components/map/TransitMap"
+
 import EmptyState from "../components/ui/EmptyState"
+
 import ErrorState from "../components/ui/ErrorState"
+
+import DataStatus from "../components/ui/DataStatus"
+
 import FavoriteButton from "../components/ui/FavoriteButton"
+
 import LoadingScreen from "../components/ui/LoadingScreen"
+
 import PageHeader from "../components/ui/PageHeader"
+
 import { useBusPositions, useItinerario, useLinha, useTracado } from "../hooks/transit"
+
 import useFavorites from "../hooks/useFavorites"
 
 const PONTOS_VISIVEIS = 6
 
 /** Mostra a linha da URL. Trata carregamento, erro e linha inexistente. */
+
 export default function LineDetailPage() {
   const { id = "" } = useParams()
+
   const line = useLinha(id)
+
   const itinerary = useItinerario(id)
+
   const tracado = useTracado(id)
+
   const buses = useBusPositions(id)
+
   const [showAll, setShowAll] = useState(false)
+
   const { isFavorite, toggle } = useFavorites()
 
+  // Mantém a referência estável: atualização do ônibus não redefine a câmera da linha.
+  const routeCenter = useMemo<[number, number] | undefined>(() => {
+    const first = itinerary.data?.[0]
+    return first ? [first.lat, first.lng] : undefined
+  }, [itinerary.data])
+
   if (line.loading || itinerary.loading) return <LoadingScreen label="Carregando linha..." />
+
   const error = line.error ?? itinerary.error
+
   if (error !== undefined && !line.data) {
     return (
       <div className="page">
@@ -37,12 +66,14 @@ export default function LineDetailPage() {
           error={error}
           onRetry={() => {
             line.reload()
+
             itinerary.reload()
           }}
         />
       </div>
     )
   }
+
   if (!line.data) {
     return (
       <div className="page">
@@ -53,6 +84,7 @@ export default function LineDetailPage() {
   }
 
   const linha = line.data
+
   const routePoints = itinerary.data ?? []
 
   return (
@@ -64,9 +96,9 @@ export default function LineDetailPage() {
       />
       <div className="line-map-wrap">
         <TransitMap
-          center={routePoints[0] ? [routePoints[0].lat, routePoints[0].lng] : undefined}
+          center={routeCenter}
           points={routePoints}
-          buses={buses}
+          buses={buses.data ?? []}
           lines={[linha]}
           tracados={tracado.data && { [linha.id]: tracado.data }}
           route={tracado.data}
@@ -75,10 +107,26 @@ export default function LineDetailPage() {
           className="line-map"
         />
         <div className="live-buses">
-          <span /> {buses.length} ônibus circulando
+          <span />
+          {buses.error !== undefined
+            ? "Posições indisponíveis"
+            : buses.loading
+              ? "Consultando ônibus…"
+              : `${(buses.data ?? []).filter((bus) => bus.connectionStatus !== "connection_lost").length} ônibus em serviço`}
         </div>
       </div>
       <div className="page-body line-details">
+        <DataStatus {...buses} onRetry={buses.reload} />
+        {itinerary.error !== undefined && (
+          <ErrorState
+            error={itinerary.error}
+            onRetry={itinerary.reload}
+            title="Não foi possível atualizar o itinerário"
+          />
+        )}
+        {tracado.error !== undefined && (
+          <ErrorState error={tracado.error} onRetry={tracado.reload} title="Traçado indisponível" />
+        )}
         <div className="operation-card">
           <Clock3 size={20} />
           <div>
@@ -117,7 +165,10 @@ export default function LineDetailPage() {
           <h2>Ônibus desta linha</h2>
         </div>
         <div className="bus-list">
-          {buses.map((bus) => (
+          {!buses.loading && !buses.error && buses.data?.length === 0 && (
+            <EmptyState title="Nenhum ônibus em serviço" />
+          )}
+          {(buses.data ?? []).map((bus) => (
             <Link to={paths.acompanhar(linha.id, bus.id)} className="bus-row" key={bus.id}>
               <span className="round-icon yellow">
                 <BusFront size={19} />
@@ -126,7 +177,9 @@ export default function LineDetailPage() {
                 <strong>Ônibus {bus.prefixo}</strong>
                 <small>Sentido {bus.sentido}</small>
               </span>
-              <span className="online-label">Em movimento</span>
+              <span className="online-label">
+                {bus.connectionStatus === "connection_lost" ? "Sem sinal" : "Em serviço"}
+              </span>
             </Link>
           ))}
         </div>

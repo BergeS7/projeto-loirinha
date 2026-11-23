@@ -4,12 +4,12 @@ PWA mobile-first para acompanhar ônibus urbanos em Santa Inês (MA). Feito com 
 
 ## Repositório
 
-| Pasta | O que é |
-| --- | --- |
-| raiz (`src/`, `public/`…) | Front-end PWA (este README) |
-| [`backend/`](backend/README.md) | Backend Firebase: Cloud Functions em Python, regras, scripts e dados do emulador |
-| [`docs/backend/`](docs/backend/BACKEND.md) | Documentação atual do backend (PDF de 21/10/2026 + resumo) |
-| [`docs/INTEGRACAO.md`](docs/INTEGRACAO.md) | Plano para ligar o front ao backend: o que já existe, o que falta e as decisões pendentes |
+| Pasta                                      | O que é                                                                          |
+| ------------------------------------------ | -------------------------------------------------------------------------------- |
+| raiz (`src/`, `public/`…)                  | Front-end PWA (este README)                                                      |
+| [`backend/`](backend/README.md)            | Backend Firebase: Cloud Functions em Python, regras, scripts e dados do emulador |
+| [`docs/backend/`](docs/backend/BACKEND.md) | Documentação atual do backend (PDF de 21/10/2026 + resumo)                       |
+| [`docs/INTEGRACAO.md`](docs/INTEGRACAO.md) | Como o front usa o backend, como rodar tudo local e o que ainda falta            |
 
 ## Como rodar
 
@@ -22,12 +22,13 @@ npx pnpm@10.34.3 dev
 
 O app abre em http://localhost:8443.
 
-| Script | O que faz |
-| --- | --- |
-| `dev` | Servidor de desenvolvimento |
-| `build` | Build de produção, com manifest e service worker |
-| `preview` | Serve o build localmente |
-| `typecheck` | Verifica os tipos do TypeScript |
+| Script      | O que faz                                            |
+| ----------- | ---------------------------------------------------- |
+| `dev`       | Servidor de desenvolvimento                          |
+| `build`     | Build de produção, com manifest e service worker     |
+| `preview`   | Serve o build localmente                             |
+| `typecheck` | Verifica os tipos do TypeScript                      |
+| `test`      | Regressões do frontend (Vitest + navegador simulado) |
 
 ## Publicar na Vercel
 
@@ -35,7 +36,7 @@ O projeto já vem configurado ([vercel.json](vercel.json)): build com pnpm, rota
 
 1. Envie o código para um repositório no GitHub.
 2. Na Vercel, clique em **Add New → Project**, importe o repositório e clique em **Deploy**. Não é preciso mudar nada nas configurações.
-3. Sem variáveis de ambiente, o app usa os dados simulados. Para usar o backend, cadastre `VITE_DATA_SOURCE` e `VITE_API_URL` em **Settings → Environment Variables** e faça um novo deploy.
+3. Sem variáveis de ambiente, as telas do passageiro usam dados simulados e mostram um aviso de demonstração. Para a área **Conta** funcionar com o Firebase real, configure as variáveis `VITE_FIREBASE_*` descritas em [docs/INTEGRACAO.md](docs/INTEGRACAO.md).
 
 ## Logo e ícones
 
@@ -64,7 +65,7 @@ src/
   hooks/        transit.ts (hooks de dados), useAsyncData e hooks do navegador
   services/
     transit/    Contrato TransitService + implementação HTTP e simulada (mock/)
-    backend/    Ponte com o backend Firebase: login, callables, telemetria e erros (ainda sem uso nas telas)
+    backend/    Login operacional, callables, telemetria e erros Firebase
     preferences.ts  Favoritos e buscas recentes (localStorage)
   lib/          Utilitários sem React: http, geo, format, storage
   config/       Variáveis de ambiente (env.ts), constantes e conexão Firebase (firebase.ts)
@@ -81,8 +82,23 @@ página → hooks/transit.ts → services/transit (contrato) → apiTransitServi
 
 ### Regras
 
-- Páginas não importam serviços nem dados simulados diretamente. Elas usam os hooks de `hooks/transit.ts`.
+- Dados públicos de transporte chegam às páginas pelos hooks de `hooks/transit.ts`, sem importar mocks diretamente. Fluxos autenticados de conta e operação usam os serviços de `services/backend`.
 - Cálculos que o backend vai fazer (previsão de chegada, próximo ponto) ficam na implementação do serviço, não nas telas.
 - Para criar uma tela nova: adicione a página em `pages/`, a rota em `app/routes.tsx` e o caminho em `app/paths.ts`.
 - Para um dado novo: adicione o tipo em `types/`, o método no `TransitService`, as duas implementações (API e simulada), um hook em `hooks/transit.ts` e o endpoint em `docs/API.md`.
 - Estados de carregamento, erro e vazio usam `LoadingScreen`, `ErrorState` e `EmptyState`.
+
+## Contas e operação
+
+O item **Conta** usa o backend Firebase original (pasta `backend/`, sem alterações):
+
+- **Login** com e-mail e senha e **recuperação de senha**. Não há cadastro pelo app: o backend não tem essa function, e as contas são criadas pela administração.
+- **Motorista:** check-in pela tag do ônibus, rota atribuída, envio de GPS a cada 15 s e encerramento de expediente.
+- **Dono de frota:** ônibus, motoristas e rotas da frota, rota em andamento de cada ônibus, atribuição de rota, cadastro de rota e mapa ao vivo.
+- **Passageiro:** mapa com os ônibus em serviço, ao vivo.
+
+As telas de linhas, pontos, previsões e avisos continuam com dados simulados, porque o backend ainda não tem esses dados. Detalhes e próximos passos: [docs/INTEGRACAO.md](docs/INTEGRACAO.md).
+
+## Validação
+
+Execute `pnpm typecheck`, `pnpm test` e `pnpm build`. Os testes do backend e o roteiro manual estão em [docs/VALIDACAO.md](docs/VALIDACAO.md).
